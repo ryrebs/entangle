@@ -63,6 +63,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 }
 
 func createUser(lat, lng float32) string {
+	// TODO: create actual user from db
 	return fmt.Sprintf("%f%f", lat, lng)
 }
 
