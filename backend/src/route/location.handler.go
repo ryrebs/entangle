@@ -16,6 +16,8 @@ func LocationHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	log.Println(trackerID)
 	// TODO: get location request
+	// request: target: [1,2]
+	// response: targets: [{id: 1,lat: 123,lng:123},{id: 2,lat: 123,lng:123}]
 	return c.JSON(http.StatusOK, struct {
 		Msg string `json:"msg"`
 	}{
@@ -26,8 +28,12 @@ func LocationHandler(c echo.Context) (err error) {
 // TODO: implement
 
 // AddTargetHandler - add targets minimum 1, array of targets
-// targets have more control, since this is a self created id by the target/tracker
-func AddTargetHandler() {}
+func AddTargetHandler() {
+	// request: targets [1, 2]
+	// search if target exists return only existing target
+	// add target to trackers target list
+	// response: targets [{id: 1, lat: 123, lng,123}, {id:2, lat:123, lng:123}]
+}
 
 // TODO: implement
 

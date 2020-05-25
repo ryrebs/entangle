@@ -73,7 +73,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	timeNowUTC := timeNow.UTC()
 	tracker := createUser(claims.Lat, claims.Lng)
 	if len(tracker) > 0 {
-		reqToken, cErr := createToken(&jwt.StandardClaims{
+		reqToken, cErr := CreateToken(&jwt.StandardClaims{
 			Subject:   string(tracker),
 			ExpiresAt: timeNowUTC.Add(tokenExpirationInMinutes).Unix()})
 		if cErr != nil {
@@ -136,7 +136,8 @@ func validateClientToken(user *GenericUser) (*claims, bool) {
 	return nil, false
 }
 
-func createToken(claims *jwt.StandardClaims) (tokenString string, err error) {
+// CreateToken - creates new token
+func CreateToken(claims *jwt.StandardClaims) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString([]byte(SecretKey))
 	return tokenString, err
@@ -173,15 +174,17 @@ func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func validateServerToken(token string) (*jwt.StandardClaims, bool) {
-	t, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	t, _ := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
 	})
-	if err != nil {
-		util.LogInDev("SERVER TOKEN", err)
-		return nil, false
-	}
 	if clms, ok := t.Claims.(*jwt.StandardClaims); ok && t.Valid {
 		return clms, true
+	} else if ok && !t.Valid {
+		setTrackerExpiredStatus(string(clms.Subject))
 	}
 	return nil, false
+}
+
+// TODO: Implement set trackerId  status to expired
+func setTrackerExpiredStatus(id string) {
 }
