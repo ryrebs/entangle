@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"tracking/backend/db"
 	_ "tracking/backend/docs"
 	"tracking/backend/route"
 
@@ -24,6 +25,8 @@ func main() {
 	e.Use(middleware.Secure())
 	e.Use(middleware.CORS())
 	e.Use(route.ValidateAPIRequest)
+
+	db.InitDBClient()
 
 	if os.Getenv("ENV") != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)

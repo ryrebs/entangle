@@ -10,6 +10,8 @@ replace tracking/backend/docs => ./docs
 
 replace tracking/backend/util => ./util
 
+replace tracking/backend/db => ./db
+
 require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -32,6 +34,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/swaggo/echo-swagger v1.0.0
 	github.com/swaggo/swag v1.6.3
+	go.mongodb.org/mongo-driver v1.3.3
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
 	google.golang.org/appengine v1.6.6 // indirect
 )

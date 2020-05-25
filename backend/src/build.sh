@@ -1,1 +1,1 @@
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o backend .
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ./container/backend .

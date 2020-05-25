@@ -7,7 +7,7 @@ import (
 
 // LogInDev - logs when not in production
 func LogInDev(key string, msg interface{}) {
-	if os.Getenv("env") != "production" {
+	if os.Getenv("ENV") != "production" {
 		log.Printf("::::%s:::: %s", key, msg)
 	}
 }

@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      SECRET_KEY: $SECRET_KEY
+      SECRET_CLIENT_KEY: $SECRET_CLIENT_KEY
+      PORT: $PORT
+      ENV: $ENV
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
+    volumes:
+      - mongodb:/data/db
+
+  nginx:
+    image: "nginx:alpine"
+    ports:
+      - 127.0.0.1:80:80
+      - 127.0.0.1:443:443
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/cert.pem:/etc/nginx/cert.pem
+      - ./nginx/key.pem:/etc/nginx/key.pem
+      - ./nginx/dhparam.pem:/etc/nginx/dhparam.pem
+      - nginx-log:/var/log/nginx
+    depends_on:
+      - backend
+
+volumes:
+  nginx-log:
+  mongodb:

@@ -1,6 +1,7 @@
 package route
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -8,8 +9,12 @@ import (
 
 // TODO: handle deleted trackers
 
+// TODO: query location
+
 // LocationHandler - handles get location request
 func LocationHandler(c echo.Context) (err error) {
+	trackerID := c.Get(TrackerID)
+	log.Println(trackerID)
 	// TODO: get location request
 	return c.JSON(http.StatusOK, struct {
 		Msg string `json:"msg"`
