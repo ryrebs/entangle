@@ -26,6 +26,10 @@ type response struct {
 	Data    interface{} `json:"data"`
 }
 
+type objectID struct {
+	ID primitive.ObjectID `bson:"_id"`
+}
+
 // TrackerID - for context key of trackerID
 var TrackerID string = "trackerID"
 
@@ -34,6 +38,60 @@ var client = db.GetDefaultClient()
 var locationCollection = client.Database(db.LocationDb).Collection(db.LocationCollection)
 
 var tokenExpirationInMinutes = time.Minute * 1
+
+// Test:
+// curl --header "Content-Type: application/json" \
+//   --request POST \
+//   --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA0ODY3NTEsInN1YiI6IlwiNWVjY2U2YTMzMWYxMjQ5ZTUzMGM0NWE5XCIifQ.zYXAQeh2Z80k07HCMvgRPgQolr0nTuJYHBLbxWh3UCg"}' \
+//   http://localhost:5000/auth/refresh
+
+// RefreshHandler - refreshes the token
+// @tags Refresh token
+// @Summary Refresh the expired  token
+// @Accept  json
+// @Produce  json
+// @Header 201 {string} Token
+// @Router /refresh [post]
+func RefreshHandler(c echo.Context) (err error) {
+	user := &GenericUser{}
+	invalidRequest := &response{
+		Message: "Token Invalid",
+		Status:  http.StatusBadRequest,
+		Data:    nil,
+	}
+	if err = c.Bind(user); err != nil {
+		return
+	}
+	if err = Validate(user); err != nil {
+		msg := ExtractError(user, err)
+		util.LogInDev("Validate user", msg)
+		return c.JSON(http.StatusBadRequest, invalidRequest)
+	}
+	t, _ := jwt.ParseWithClaims(user.Token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+	if clms, ok := t.Claims.(*jwt.StandardClaims); ok {
+		// check if exist
+		// set tracker status active
+		// create new request token , createToken()
+		tracker := clms.Subject
+		err := setTrackerActiveStatus(tracker)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, invalidRequest)
+		}
+		reqToken, cErr := CreateToken(createStandardClaims(string(tracker)))
+		if cErr != nil {
+			return c.JSON(http.StatusBadRequest, invalidRequest)
+		}
+		util.LogInDev("REFRESH", "done")
+		return c.JSON(http.StatusCreated, &response{
+			Message: "Token",
+			Status:  http.StatusCreated,
+			Data:    reqToken,
+		})
+	}
+	return c.JSON(http.StatusBadRequest, invalidRequest)
+}
 
 // Test:
 // curl --header "Content-Type: application/json" \
@@ -69,20 +127,16 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	if ok != true {
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-	timeNow := time.Now()
-	timeNowUTC := timeNow.UTC()
 	tracker := createUser(claims.Lat, claims.Lng)
 	if len(tracker) > 0 {
-		reqToken, cErr := CreateToken(&jwt.StandardClaims{
-			Subject:   string(tracker),
-			ExpiresAt: timeNowUTC.Add(tokenExpirationInMinutes).Unix()})
+		reqToken, cErr := CreateToken(createStandardClaims(string(tracker)))
 		if cErr != nil {
 			return c.JSON(http.StatusBadRequest, invalidRequest)
 		}
-		return c.JSON(http.StatusCreated, struct {
-			Token string `json:"token"`
-		}{
-			Token: reqToken,
+		return c.JSON(http.StatusCreated, &response{
+			Message: "Token",
+			Status:  http.StatusCreated,
+			Data:    reqToken,
 		})
 	}
 	return c.JSON(http.StatusBadRequest, invalidRequest)
@@ -108,11 +162,6 @@ func createUser(lat, lng float32) []byte {
 		d, _ := id.(primitive.ObjectID).MarshalJSON()
 		return d
 	}
-	// jobs := []interface{}{}
-	//
-	// 		jobs = append(jobs, jobBson)
-	// 	}
-	// 	InsertIntoCollection(jobs, collection)
 	return []byte("")
 }
 
@@ -136,6 +185,15 @@ func validateClientToken(user *GenericUser) (*claims, bool) {
 	return nil, false
 }
 
+// createStandardClaims - creates token with claims Sub and Exp
+func createStandardClaims(sub string) *jwt.StandardClaims {
+	timeNow := time.Now()
+	timeNowUTC := timeNow.UTC()
+	return &jwt.StandardClaims{
+		Subject:   sub,
+		ExpiresAt: timeNowUTC.Add(tokenExpirationInMinutes).Unix()}
+}
+
 // CreateToken - creates new token
 func CreateToken(claims *jwt.StandardClaims) (tokenString string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -151,7 +209,8 @@ func (c *claims) validateClaim() (err error) {
 	return nil
 }
 
-// curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA0MzE5MTEsInN1YiI6IlwiNWVjYzEwNmI0M2Q1MmJmODZhZGQwZDkwXCIifQ.uG3z46DMbmmB4VCrAkIRQTVL3xVNpqCiwEVITW3N3xM" http://localhost:5000/api/location
+// Test:
+// curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA0ODY3NTEsInN1YiI6IlwiNWVjY2U2YTMzMWYxMjQ5ZTUzMGM0NWE5XCIifQ.zYXAQeh2Z80k07HCMvgRPgQolr0nTuJYHBLbxWh3UCg" http://localhost:5000/api/location
 
 // ValidateAPIRequest - validates request to api
 func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
@@ -180,11 +239,31 @@ func validateServerToken(token string) (*jwt.StandardClaims, bool) {
 	if clms, ok := t.Claims.(*jwt.StandardClaims); ok && t.Valid {
 		return clms, true
 	} else if ok && !t.Valid {
-		setTrackerExpiredStatus(string(clms.Subject))
+		setTrackerExpiredStatus(clms.Subject)
 	}
 	return nil, false
 }
 
-// TODO: Implement set trackerId  status to expired
-func setTrackerExpiredStatus(id string) {
+func setTrackerExpiredStatus(id string) error {
+	changes := struct{ Status string }{Status: "Expired"}
+	oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(id, "\"", ""))
+	filter := &objectID{ID: oid}
+	err := db.FindOneAndUpdate(filter, changes, locationCollection)
+	if err != nil {
+		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
+		return err
+	}
+	return nil
+}
+
+func setTrackerActiveStatus(id string) error {
+	changes := struct{ Status string }{Status: "Active"}
+	oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(id, "\"", ""))
+	filter := &objectID{ID: oid}
+	err := db.FindOneAndUpdate(filter, changes, locationCollection)
+	if err != nil {
+		util.LogInDev("ERR:setTrackerActiveStatus", err.Error())
+		return err
+	}
+	return nil
 }

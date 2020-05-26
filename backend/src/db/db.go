@@ -52,6 +52,56 @@ func GetDefaultClient() *mongo.Client {
 	return Client
 }
 
+// FindOne - find one document
+func FindOne(filter interface{}, cl *mongo.Collection) (bson.M, error) {
+	opts := options.FindOne()
+	f, errf := bson.Marshal(filter)
+	if errf != nil {
+		return nil, errf
+	}
+	var result bson.M
+	err := cl.FindOne(context.TODO(), f, opts).Decode(&result)
+	if err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return nil, err
+		}
+		util.LogInDev("ERR:FindOne", err.Error())
+		return nil, err
+	}
+	return result, nil
+}
+
+// FindOneAndUpdate - find and update a document
+func FindOneAndUpdate(filter interface{}, changes interface{}, cl *mongo.Collection) error {
+	opts := options.FindOneAndUpdate()
+	setChanges := struct {
+		Set interface{} `bson:"$set"`
+	}{
+		Set: changes,
+	}
+	c, errc := bson.Marshal(setChanges)
+	if errc != nil {
+		return errc
+	}
+	f, errf := bson.Marshal(filter)
+	if errf != nil {
+		return errf
+	}
+	var updatedDocument bson.M
+	err := cl.FindOneAndUpdate(context.TODO(), f, c, opts).Decode(&updatedDocument)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			util.LogInDev("ERR:ErrNoDocuments", err.Error())
+			return err
+		}
+		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
+		return err
+	}
+	util.LogInDev("UPDATED", updatedDocument)
+	return nil
+}
+
 // InsertOne - insert one
 func InsertOne(item interface{}, col *mongo.Collection) interface{} {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
