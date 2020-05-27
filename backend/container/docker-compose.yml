@@ -3,6 +3,8 @@ version: "3.7"
 services:
   backend:
     build: ./backend
+    ports:
+      - 5000:5000
     environment:
       SECRET_KEY: $SECRET_KEY
       SECRET_CLIENT_KEY: $SECRET_CLIENT_KEY
