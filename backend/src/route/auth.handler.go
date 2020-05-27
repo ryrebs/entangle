@@ -1,6 +1,8 @@
 package route
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -15,19 +17,16 @@ import (
 )
 
 type claims struct {
-	Lat float32 `json:"lat" validate:"required"`
-	Lng float32 `json:"lng" validate:"required"`
+	Lat float64 `json:"lat" validate:"required"`
+	Lng float64 `json:"lng" validate:"required"`
 	jwt.StandardClaims
 }
 
-type response struct {
+// Response - api response
+type Response struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
-}
-
-type objectID struct {
-	ID primitive.ObjectID `bson:"_id"`
 }
 
 // TrackerID - for context key of trackerID
@@ -35,15 +34,10 @@ var TrackerID string = "trackerID"
 
 var client = db.GetDefaultClient()
 
-var locationCollection = client.Database(db.LocationDb).Collection(db.LocationCollection)
+// LocationCollection - the location collection
+var LocationCollection = client.Database(db.LocationDb).Collection(db.LocationCollection)
 
-var tokenExpirationInMinutes = time.Minute * 1
-
-// Test:
-// curl --header "Content-Type: application/json" \
-//   --request POST \
-//   --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA0ODY3NTEsInN1YiI6IlwiNWVjY2U2YTMzMWYxMjQ5ZTUzMGM0NWE5XCIifQ.zYXAQeh2Z80k07HCMvgRPgQolr0nTuJYHBLbxWh3UCg"}' \
-//   http://localhost:5000/auth/refresh
+var tokenExpirationInMinutes = time.Hour * 24 // time.Minute * 525600
 
 // RefreshHandler - refreshes the token
 // @tags Refresh token
@@ -54,7 +48,7 @@ var tokenExpirationInMinutes = time.Minute * 1
 // @Router /refresh [post]
 func RefreshHandler(c echo.Context) (err error) {
 	user := &GenericUser{}
-	invalidRequest := &response{
+	invalidRequest := Response{
 		Message: "Token Invalid",
 		Status:  http.StatusBadRequest,
 		Data:    nil,
@@ -71,9 +65,6 @@ func RefreshHandler(c echo.Context) (err error) {
 		return []byte(SecretKey), nil
 	})
 	if clms, ok := t.Claims.(*jwt.StandardClaims); ok {
-		// check if exist
-		// set tracker status active
-		// create new request token , createToken()
 		tracker := clms.Subject
 		err := setTrackerActiveStatus(tracker)
 		if err != nil {
@@ -84,7 +75,7 @@ func RefreshHandler(c echo.Context) (err error) {
 			return c.JSON(http.StatusBadRequest, invalidRequest)
 		}
 		util.LogInDev("REFRESH", "done")
-		return c.JSON(http.StatusCreated, &response{
+		return c.JSON(http.StatusCreated, &Response{
 			Message: "Token",
 			Status:  http.StatusCreated,
 			Data:    reqToken,
@@ -92,12 +83,6 @@ func RefreshHandler(c echo.Context) (err error) {
 	}
 	return c.JSON(http.StatusBadRequest, invalidRequest)
 }
-
-// Test:
-// curl --header "Content-Type: application/json" \
-//   --request POST \
-//   --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXQiOjEuMiwibG5nIjoxLjN9.5_tEKxoz9-9YVW0TjGfMR9nkMtbzLLNyw0PQKppOWO0"}' \
-//   http://localhost:5000/auth
 
 // AuthenticateHandler - handles /authenticate route
 // @tags Auth
@@ -110,7 +95,7 @@ func RefreshHandler(c echo.Context) (err error) {
 // @Router /authenticate [post]
 func AuthenticateHandler(c echo.Context) (err error) {
 	user := &GenericUser{}
-	invalidRequest := &response{
+	invalidRequest := Response{
 		Message: "Token Invalid or Expired",
 		Status:  http.StatusBadRequest,
 		Data:    nil,
@@ -133,7 +118,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 		if cErr != nil {
 			return c.JSON(http.StatusBadRequest, invalidRequest)
 		}
-		return c.JSON(http.StatusCreated, &response{
+		return c.JSON(http.StatusCreated, &Response{
 			Message: "Token",
 			Status:  http.StatusCreated,
 			Data:    reqToken,
@@ -142,21 +127,21 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	return c.JSON(http.StatusBadRequest, invalidRequest)
 }
 
-func createUser(lat, lng float32) []byte {
+func createUser(lat, lng float64) []byte {
 	user, _ := bson.Marshal(struct {
-		Lat        float32
-		Lng        float32
-		LastUpdate string
+		Lat        float64
+		Lng        float64
+		LastUpdate string `bson:"lastUpdate"`
 		Status     string
-		Targets    []string
+		Trackers   []string
 	}{
 		Lat:        lat,
 		Lng:        lng,
 		LastUpdate: util.DateToday(),
 		Status:     "Active",
-		Targets:    []string{},
+		Trackers:   []string{},
 	})
-	id := db.InsertOne(user, locationCollection)
+	id := db.InsertOne(user, LocationCollection)
 	if id != nil {
 		util.LogInDev("::::ID::::", id)
 		d, _ := id.(primitive.ObjectID).MarshalJSON()
@@ -209,22 +194,20 @@ func (c *claims) validateClaim() (err error) {
 	return nil
 }
 
-// Test:
-// curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA0ODY3NTEsInN1YiI6IlwiNWVjY2U2YTMzMWYxMjQ5ZTUzMGM0NWE5XCIifQ.zYXAQeh2Z80k07HCMvgRPgQolr0nTuJYHBLbxWh3UCg" http://localhost:5000/api/location
-
-// ValidateAPIRequest - validates request to api
+// ValidateAPIRequest - check valid token and an existing tracker that is not
 func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		p := c.Path()
+		response := Response{
+			Message: "Token Invalid or Expired",
+			Status:  http.StatusBadRequest,
+			Data:    nil,
+		}
 		if strings.Contains(p, "api") {
 			token := c.Request().Header.Get(echo.HeaderAuthorization)
 			clm, ok := validateServerToken(token)
 			if !ok {
-				return c.JSON(http.StatusBadRequest, &response{
-					Message: "Token Invalid or Expired",
-					Status:  http.StatusBadRequest,
-					Data:    nil,
-				})
+				return c.JSON(http.StatusBadRequest, response)
 			}
 			c.Set(TrackerID, string(clm.Subject))
 		}
@@ -233,22 +216,39 @@ func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func validateServerToken(token string) (*jwt.StandardClaims, bool) {
-	t, _ := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-	if clms, ok := t.Claims.(*jwt.StandardClaims); ok && t.Valid {
-		return clms, true
-	} else if ok && !t.Valid {
-		setTrackerExpiredStatus(clms.Subject)
+	if token != "" {
+		t, _ := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				util.LogInDev("ERR:ParseWithClaims", "Invalid signing method")
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return []byte(SecretKey), nil
+		})
+		if clms, ok := t.Claims.(*jwt.StandardClaims); ok && t.Valid {
+			util.LogInDev("TRACKER", clms.Subject)
+			err := validateTrackerExistence(clms.Subject)
+			if err != nil {
+				return nil, false
+			}
+			return clms, true
+		} else if ok && !t.Valid {
+			setTrackerExpiredStatus(clms.Subject)
+		}
 	}
 	return nil, false
 }
 
 func setTrackerExpiredStatus(id string) error {
+	util.LogInDev("TRACKER", id)
 	changes := struct{ Status string }{Status: "Expired"}
-	oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(id, "\"", ""))
-	filter := &objectID{ID: oid}
-	err := db.FindOneAndUpdate(filter, changes, locationCollection)
+	filter := db.CreateObjectID(id)
+	setChanges := struct {
+		Set interface{} `bson:"$set"`
+	}{
+		Set: changes,
+	}
+	_, err := db.FindOneAndUpdate(setChanges, filter, LocationCollection)
 	if err != nil {
 		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
 		return err
@@ -258,12 +258,28 @@ func setTrackerExpiredStatus(id string) error {
 
 func setTrackerActiveStatus(id string) error {
 	changes := struct{ Status string }{Status: "Active"}
-	oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(id, "\"", ""))
-	filter := &objectID{ID: oid}
-	err := db.FindOneAndUpdate(filter, changes, locationCollection)
+	filter := db.CreateObjectID(id)
+	setChanges := struct {
+		Set interface{} `bson:"$set"`
+	}{
+		Set: changes,
+	}
+	_, err := db.FindOneAndUpdate(setChanges, filter, LocationCollection)
 	if err != nil {
 		util.LogInDev("ERR:setTrackerActiveStatus", err.Error())
 		return err
+	}
+	return nil
+}
+
+func validateTrackerExistence(id string) error {
+	filter := db.CreateObjectID(id)
+	doc, err := db.FindOne(filter, LocationCollection)
+	if err != nil {
+		return err
+	}
+	if v, ok := doc["status"]; v == "Expired" || !ok {
+		return errors.New("Invalid Status")
 	}
 	return nil
 }

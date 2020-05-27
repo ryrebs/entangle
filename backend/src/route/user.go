@@ -54,6 +54,63 @@ func (u *GenericUser) extractValidationError(err error) (errs string) {
 	return allErrors
 }
 
+// UpdateLocation -  update tracker location
+type UpdateLocation struct {
+	Lat float64 `json:"lat" validate:"required"`
+	Lng float64 `json:"lng" validate:"required"`
+	err map[string]string
+}
+
+func (u *UpdateLocation) validate() (err error) {
+	validate = validator.New()
+	if err = validate.Struct(u); err != nil {
+		return
+	}
+	return nil
+}
+
+func (u *UpdateLocation) extractValidationError(err error) (errs string) {
+	allErrors := ""
+	e := map[string]string{
+		"required": " should not be empty.",
+	}
+	for _, errss := range err.(validator.ValidationErrors) {
+		msg, ok := e[errss.Tag()]
+		if ok {
+			allErrors = allErrors + errss.Field() + msg + "\n"
+		}
+	}
+	return allErrors
+}
+
+// Targets - list of target
+type Targets struct {
+	Targets []string `json:"targets" validate:"required"`
+	err     map[string]string
+}
+
+func (u *Targets) validate() (err error) {
+	validate = validator.New()
+	if err = validate.Struct(u); err != nil {
+		return
+	}
+	return nil
+}
+
+func (u *Targets) extractValidationError(err error) (errs string) {
+	allErrors := ""
+	e := map[string]string{
+		"required": " should not be empty.",
+	}
+	for _, errss := range err.(validator.ValidationErrors) {
+		msg, ok := e[errss.Tag()]
+		if ok {
+			allErrors = allErrors + errss.Field() + msg + "\n"
+		}
+	}
+	return allErrors
+}
+
 // ExtractError extract errors
 func ExtractError(user User, err error) (errs string) {
 	errs = user.extractValidationError(err)

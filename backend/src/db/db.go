@@ -4,10 +4,12 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
 	"time"
 	"tracking/backend/util"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -22,6 +24,11 @@ const LocationCollection = "locationCol"
 const LocationDb = "locations"
 
 var collection *mongo.Collection
+
+// ObjectID - return a struct type ObjectID
+type ObjectID struct {
+	ID primitive.ObjectID `bson:"_id"`
+}
 
 // InitDBClient - returns the collection
 func InitDBClient() {
@@ -73,33 +80,28 @@ func FindOne(filter interface{}, cl *mongo.Collection) (bson.M, error) {
 }
 
 // FindOneAndUpdate - find and update a document
-func FindOneAndUpdate(filter interface{}, changes interface{}, cl *mongo.Collection) error {
-	opts := options.FindOneAndUpdate()
-	setChanges := struct {
-		Set interface{} `bson:"$set"`
-	}{
-		Set: changes,
-	}
+func FindOneAndUpdate(setChanges interface{}, filter interface{}, cl *mongo.Collection) (bson.M, error) {
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 	c, errc := bson.Marshal(setChanges)
 	if errc != nil {
-		return errc
+		return nil, errc
 	}
 	f, errf := bson.Marshal(filter)
 	if errf != nil {
-		return errf
+		return nil, errf
 	}
 	var updatedDocument bson.M
 	err := cl.FindOneAndUpdate(context.TODO(), f, c, opts).Decode(&updatedDocument)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			util.LogInDev("ERR:ErrNoDocuments", err.Error())
-			return err
+			return nil, err
 		}
 		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
-		return err
+		return nil, err
 	}
 	util.LogInDev("UPDATED", updatedDocument)
-	return nil
+	return updatedDocument, nil
 }
 
 // InsertOne - insert one
@@ -131,7 +133,14 @@ func DeleteMany(filter interface{}, collection *mongo.Collection) {
 	})
 	res, err := collection.DeleteMany(context.TODO(), filterBson, opts)
 	if err != nil {
-		log.Fatal(err)
+		util.LogInDev("ERR:DeleteMany", err.Error())
 	}
-	log.Println(res)
+	util.LogInDev("RES:DeleteMany", res)
+}
+
+// CreateObjectID - create primitive objectID from string
+func CreateObjectID(id string) (objID *ObjectID) {
+	oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(id, "\"", ""))
+	objID = &ObjectID{ID: oid}
+	return
 }
