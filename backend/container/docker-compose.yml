@@ -8,8 +8,10 @@ services:
     environment:
       SECRET_KEY: $SECRET_KEY
       SECRET_CLIENT_KEY: $SECRET_CLIENT_KEY
+      MONGODB: $MONGODB
       PORT: $PORT
       ENV: $ENV
+
 
   mongo:
     image: mongo

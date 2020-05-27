@@ -26,7 +26,7 @@ var errorResponse = Response{
 	Data:    nil,
 }
 
-// LocationHandler - handles get location request
+// LocationHandler - find all records that contains the requesting trackerID on field trackers
 func LocationHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	result := []target{}
@@ -60,7 +60,7 @@ func LocationHandler(c echo.Context) (err error) {
 	})
 }
 
-// AddTargetHandler - add targets minimum 1, array of targets
+// AddTargetHandler - add the requesting trackerID on targets's field trackers
 func AddTargetHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	result := []target{}
@@ -109,7 +109,8 @@ func AddTargetHandler(c echo.Context) (err error) {
 	})
 }
 
-func updateTrackerLocationHandler(c echo.Context) (err error) {
+// UpdateTrackerLocationHandler - update the lat, lng of the tracker
+func UpdateTrackerLocationHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	user := &UpdateLocation{}
 	invalidRequest := Response{
@@ -126,6 +127,7 @@ func updateTrackerLocationHandler(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
 	if trackerID != nil || trackerID != "" {
+		user.LastUpdate = util.DateToday()
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		filter := db.CreateObjectID(tID)
 		setChanges := struct {
@@ -142,13 +144,13 @@ func updateTrackerLocationHandler(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, Response{
 		Status:  http.StatusOK,
 		Message: "Updated",
-		Data:    nil,
+		Data:    trackerID,
 	})
 }
 
 // TODO: implement
 
-// TrackerDeleteHandler - deletes the tracker
+// TrackerDeleteHandler - deletes the requesting tracker and deletes entry of trackerID on all docs
 func TrackerDeleteHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	if trackerID != "" || trackerID != nil {
@@ -175,6 +177,7 @@ func TrackerDeleteHandler(c echo.Context) (err error) {
 	})
 }
 
+// deleteTrackerOnTarget - deletes entry of trackerID on all docs
 func deleteTrackerOnTarget(id string) {
 	filter := bson.D{{"trackers", id}}
 	update := bson.D{{"$pull", bson.D{{"trackers", id}}}}
@@ -187,8 +190,8 @@ func deleteTrackerOnTarget(id string) {
 
 // TODO: implement
 
-// TargetDeleteHandler - remove target from db, array of targets
-func TargetDeleteHandler(c echo.Context) (err error) {
+// TargetDeleteTrackerHandler - remove trackers, this will stop the target from being tracked
+func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	user := &Targets{}
 	invalidRequest := Response{

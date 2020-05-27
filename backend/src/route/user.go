@@ -56,9 +56,10 @@ func (u *GenericUser) extractValidationError(err error) (errs string) {
 
 // UpdateLocation -  update tracker location
 type UpdateLocation struct {
-	Lat float64 `json:"lat" validate:"required"`
-	Lng float64 `json:"lng" validate:"required"`
-	err map[string]string
+	Lat        float64 `json:"lat" validate:"required"`
+	Lng        float64 `json:"lng" validate:"required"`
+	LastUpdate string  `json:"lastUpdate" bson:"lastUpdate"`
+	err        map[string]string
 }
 
 func (u *UpdateLocation) validate() (err error) {

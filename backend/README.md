@@ -49,7 +49,7 @@ Test token for registration contains lat, lng and signed by client secret key
 
 Token  w/ 1yr expiration:
 
-	curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2NjI1MzgsInN1YiI6IlwiNWVjZTQ0MGFiY2E0MmEzYTYzMzMwMzFlXCIifQ.gPkppjcOMj5N18oULgxBxFiEgfGn-u3CH0mBdadf1ME" http://localhost:5000/api/location
+	curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM3ODMsInN1YiI6IlwiNWVjZWJlMTczZTJhMjk5ODc0MTJiNjBjXCIifQ.i_D6dwsV_rQ3_yvniUnd_RPRiVHRMtwEqLg7P0arUTA" http://localhost:5000/api/location
 
 Expired token:
 
@@ -70,9 +70,9 @@ curl --header "Content-Type: application/json" --header "Authorization: eyJhbGci
  http://localhost:5000/api/addtarget
 
 
-curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2NjI1MzgsInN1YiI6IlwiNWVjZTQ0MGFiY2E0MmEzYTYzMzMwMzFlXCIifQ.gPkppjcOMj5N18oULgxBxFiEgfGn-u3CH0mBdadf1ME" \
+curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM4MDMsInN1YiI6IlwiNWVjZWJlMmIzZTJhMjk5ODc0MTJiNjBkXCIifQ.QhxJGwliv6HWNicBYawReJWghEbOG0CyatrLn3PyuMs" \
         --request POST \
-        --data '{"lat": 1.12312323, "lng": 1.1283791}' \
+        --data '{"lat": 100.12312323, "lng": 20.1283791}' \
 http://localhost:5000/api/updatelocation
 
 
