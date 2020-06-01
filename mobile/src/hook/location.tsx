@@ -12,7 +12,6 @@ export default () => {
     const updateCoords = useCallback(location => {
         dispatch(updateCoordsReducerAction({ location }))
     }, [location])
-    console.log("run effect")
     useEffect(() => {
         (async () => {
             let { status } = await Location.requestPermissionsAsync();
