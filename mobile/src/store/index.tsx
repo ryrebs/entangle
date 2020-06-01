@@ -10,9 +10,10 @@ import createSecureStore from "redux-persist-expo-securestore";
 const storage = createSecureStore();
 
 const persistConfig = {
-  key: 'sample', // Change with your correct reducer key
+  key: "app", // Change with your correct reducer key
   storage,
   // whitelist/blacklist list of reducer Array<string> where string is the key 
+  whitelist: ["tracker"]
 }
 
 const persistedRootReducer = persistReducer(persistConfig, createRootReducer())
