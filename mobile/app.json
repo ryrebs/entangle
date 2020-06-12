@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "trackingTarget-mobile",
-    "slug": "trackingTarget-mobile",
+    "name": "Entangle",
+    "slug": "Entangle",
     "platforms": [
       "ios",
       "android",
@@ -22,7 +22,21 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "buildNumber": "1.0.0",
+      "bundleIdentifier": "entangle",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription":"",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "",
+        "NSLocationAlwaysUsageDescription":"",
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ]
+      }
+    },
+    "android": {
+      "versionCode": 1
     }
   }
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from 'react-native'
-import { Button, Divider, Layout, TopNavigation } from '@ui-kitten/components';
+import { Button } from '@ui-kitten/components';
 
 import { AuthContext } from "../../context/AuthContextProvider";
 
