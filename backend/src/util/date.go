@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// DateToday - returns the date today
-func DateToday() string {
-	return time.Now().UTC().String()
+// DateToday - returns the date today in unix timestamp
+func DateToday() int64 {
+	return time.Now().UTC().Unix()
 }
 
 // DateYesterday - returns the date yesterday

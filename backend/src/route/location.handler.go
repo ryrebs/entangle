@@ -15,9 +15,9 @@ import (
 
 type target struct {
 	ID         string  `json:"_id"`
-	LastUpdate string  `json:"lastUpdate"`
-	Lat        float64 `json:"lat"`
-	Lng        float64 `json:"lng"`
+	LastUpdate int64   `json:"lastUpdate"`
+	Lat        float64 `json:"latitude"`
+	Lng        float64 `json:"longitude"`
 }
 
 var errorResponse = Response{
@@ -47,9 +47,9 @@ func LocationHandler(c echo.Context) (err error) {
 			objectIDStr, _ := res["_id"].(primitive.ObjectID).MarshalJSON()
 			result = append(result, target{
 				ID:         strings.ReplaceAll(string(objectIDStr), "\"", ""),
-				LastUpdate: res["lastUpdate"].(string),
-				Lat:        res["lat"].(float64),
-				Lng:        res["lng"].(float64),
+				LastUpdate: res["lastUpdate"].(int64),
+				Lat:        res["latitude"].(float64),
+				Lng:        res["longitude"].(float64),
 			})
 		}
 	}
@@ -95,9 +95,9 @@ func AddTargetHandler(c echo.Context) (err error) {
 				objectIDStr, _ := doc["_id"].(primitive.ObjectID).MarshalJSON()
 				result = append(result, target{
 					ID:         strings.ReplaceAll(string(objectIDStr), "\"", ""),
-					LastUpdate: doc["lastUpdate"].(string),
-					Lat:        doc["lat"].(float64),
-					Lng:        doc["lng"].(float64),
+					LastUpdate: doc["lastUpdate"].(int64),
+					Lat:        doc["latitude"].(float64),
+					Lng:        doc["longitude"].(float64),
 				})
 			}
 		}
@@ -148,16 +148,12 @@ func UpdateTrackerLocationHandler(c echo.Context) (err error) {
 	})
 }
 
-// TODO: implement
-
 // TrackerDeleteHandler - deletes the requesting tracker and deletes entry of trackerID on all docs
 func TrackerDeleteHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	if trackerID != "" || trackerID != nil {
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		filter := db.CreateObjectID(tID)
-		// delete at most one document in which the "name" field is "Bob" or "bob"
-		// specify the SetCollation option to provide a collation that will ignore case for string comparisons
 		opts := options.Delete().SetCollation(&options.Collation{
 			Locale:    "en_US",
 			Strength:  1,

@@ -131,7 +131,7 @@ func createUser(lat, lng float64) []byte {
 	user, _ := bson.Marshal(struct {
 		Lat        float64
 		Lng        float64
-		LastUpdate string `bson:"lastUpdate"`
+		LastUpdate int64 `bson:"lastUpdate"`
 		Status     string
 		Trackers   []string
 	}{
