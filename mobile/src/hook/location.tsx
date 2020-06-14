@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import * as TaskManager from "expo-task-manager";
 import * as Location from "expo-location";
 import { updateCoordsReducerAction } from "../screens/tracker/store/reducer";
-import { useDispatch } from "react-redux";
 import { logInterceptedForDev } from "../utils/data.util";
 import { store } from "../index";
 
 const TIME_INTERVAL = 5000; // Receive location updates every 5 seconds
 const DISTANCE_INTERVAL = 0; // Receive update with distance 0 meters
-const LOCATION_TASK_NAME = "BACKGROUN_LOCATION_TASK";
+const LOCATION_TASK_NAME = "BACKGROUND_LOCATION_TASK";
 
 export default () => {
   const [allowed, setAllowed] = useState(false);

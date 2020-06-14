@@ -12,17 +12,21 @@ import MapScreen from "./map";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 const { Navigator, Screen } = createBottomTabNavigator();
 
+const MapIcon = (props: any) => <Icon {...props} name="globe" />;
+
+const PeopleIcon = (props: any) => <Icon {...props} name="person" />;
+
 const BottomTabBar = ({ navigation, state }) => (
   <BottomNavigation
     selectedIndex={state.index}
     onSelect={(index) => navigation.navigate(state.routeNames[index])}
   >
-    <BottomNavigationTab title="Map" />
-    <BottomNavigationTab title="Targets" />
+    <BottomNavigationTab icon={MapIcon} title="Map" />
+    <BottomNavigationTab icon={PeopleIcon} title="Targets" />
   </BottomNavigation>
 );
 
-const InfoIcon = (props) => {
+const ThemeIcon = (props) => {
   const { theme } = React.useContext(ThemeContext);
   return <Icon {...props} name={theme === eva.dark ? "moon" : "sun"} />;
 };
@@ -34,7 +38,7 @@ const renderRightActions = () => {
   }, [setTheme]);
   return (
     <>
-      <TopNavigationAction icon={InfoIcon} onPress={toggleOffOn} />
+      <TopNavigationAction icon={ThemeIcon} onPress={toggleOffOn} />
     </>
   );
 };
@@ -52,7 +56,7 @@ export default () => {
       <Divider />
       <Navigator tabBar={(props) => <BottomTabBar {...props} />}>
         <Screen name="Users" component={MapScreen} />
-        <Screen name="Orders" component={TargetScreen} />
+        <Screen name="Targets" component={TargetScreen} />
       </Navigator>
     </SafeAreaView>
   );

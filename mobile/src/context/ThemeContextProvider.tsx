@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import * as eva from "@eva-design/eva";
-import { AuthContext } from "./AuthContextProvider";
 
 export const ThemeContext = React.createContext({
   setTheme: () => {},

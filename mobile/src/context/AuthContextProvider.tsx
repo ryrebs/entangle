@@ -88,9 +88,8 @@ const AuthContextProvider: React.FC<authProps> = (props) => {
     [dispatch]
   );
   useEffect(() => {
-    console.log("REnder child....");
     setProps(props.children);
-  }, [props.children, state.isAuthenticated]);
+  }, [props.children]);
 
   // states
   const { isAuthenticated, error, fetching } = state;

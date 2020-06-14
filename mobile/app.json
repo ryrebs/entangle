@@ -23,7 +23,7 @@
     ],
     "ios": {
       "buildNumber": "1.0.0",
-      "bundleIdentifier": "entangle",
+      "bundleIdentifier": "com.xcrap.entangle",
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription":"",
@@ -36,6 +36,7 @@
       }
     },
     "android": {
+      "package": "com.xcrap.entangle",
       "versionCode": 1
     }
   }
