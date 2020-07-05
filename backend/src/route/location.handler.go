@@ -184,8 +184,6 @@ func deleteTrackerOnTarget(id string) {
 	util.LogInDev("deleteTrackerOnTargetdeleteTrackerOnTarget", "DONE")
 }
 
-// TODO: implement
-
 // TargetDeleteTrackerHandler - remove trackers, this will stop the target from being tracked
 func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)

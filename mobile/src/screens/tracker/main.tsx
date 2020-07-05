@@ -2,7 +2,14 @@ import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Divider, TopNavigation } from "@ui-kitten/components";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { BottomNavigation, BottomNavigationTab } from "@ui-kitten/components";
+import {
+  BottomNavigation,
+  BottomNavigationTab,
+  Modal,
+  Card,
+  Button,
+  Text,
+} from "@ui-kitten/components";
 import { Icon, TopNavigationAction } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import { useSelector } from "react-redux";
@@ -31,7 +38,33 @@ const ThemeIcon = (props) => {
   return <Icon {...props} name={theme === eva.dark ? "moon" : "sun"} />;
 };
 
-const renderRightActions = () => {
+const LogoutIcon = (props) => {
+  const { theme } = React.useContext(ThemeContext);
+  return <Icon {...props} name="log-out" />;
+};
+
+const LogoutModal = ({ isModalVisible, toggleModal }) => {
+  const selfDestruct = React.useCallback(() => {
+    toggleModal();
+  }, []);
+  return (
+    <Modal
+      visible={isModalVisible}
+      backdropStyle={{
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}
+      onBackdropPress={toggleModal}
+    >
+      <Card>
+        <Text category="s2" style={{ margin: 20 }}>
+          Logout and Delete your data on server?
+        </Text>
+        <Button appearance="outline" status="danger" onPress={selfDestruct}>YES</Button>
+      </Card>
+    </Modal>
+  );
+};
+export const renderRightActions = () => {
   const { setTheme } = React.useContext(ThemeContext);
   const toggleOffOn = React.useCallback(() => {
     setTheme();
@@ -39,6 +72,19 @@ const renderRightActions = () => {
   return (
     <>
       <TopNavigationAction icon={ThemeIcon} onPress={toggleOffOn} />
+    </>
+  );
+};
+
+export const renderLeftActions = () => {
+  const [isModalVisible, setModalVisible] = React.useState(false);
+  const toggleModal = React.useCallback(() => {
+    setModalVisible((isVisible) => !isVisible);
+  }, [setModalVisible]);
+  return (
+    <>
+      <TopNavigationAction icon={LogoutIcon} onPress={toggleModal} />
+      <LogoutModal isModalVisible={isModalVisible} toggleModal={toggleModal} />
     </>
   );
 };
@@ -52,6 +98,7 @@ export default () => {
         subtitle={"ID: " + id}
         alignment="center"
         accessoryRight={renderRightActions}
+        accessoryLeft={renderLeftActions}
       />
       <Divider />
       <Navigator tabBar={(props) => <BottomTabBar {...props} />}>

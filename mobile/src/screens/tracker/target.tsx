@@ -10,7 +10,7 @@ import {
   Card,
   Input,
 } from "@ui-kitten/components";
-import { targetsCoordsSelector } from "./store/reducer";
+import { targetsCoordsSelector, trackerIDSelector } from "./store/reducer";
 import { CheckBox } from "react-native-elements";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as eva from "@eva-design/eva";
@@ -35,6 +35,11 @@ const style = StyleSheet.create({
     flexDirection: "row",
     height: 50,
     marginBottom: 15,
+  },
+  newTargetWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
   cbDark: {
     backgroundColor: "#222B45",
@@ -76,25 +81,51 @@ const OnlineIcon = (lastUpdate: string) => {
 };
 const AddIcon = (props: any) => <Icon {...props} name="plus" />;
 const TrackIcon = (props: any, newTarget: number) => {
-  const activeColor = newTarget > 0 ? "#0D9FA9" : "#24650A";
+  const activeColor = newTarget > 0 ? "#0D9FA9" : "#8F9BB3";
   return <Icon {...props} fill={activeColor} name="arrowhead-down" />;
 };
 const RemoveIcon = (props: any, deleteTarget: Array<string>) => {
   const activeColor = deleteTarget.length > 0 ? "#6D363F" : "#8F9BB3";
   return <Icon {...props} fill={activeColor} name="trash-2" />;
 };
+const MinusIcon = (props: any) => {
+  return <Icon {...props} fill="#0D9FA9" name="minus" />;
+};
 
 const AddModal: any = React.memo(
-  ({ visible, setNumTargets, hideModalVisible, setNewTarget }) => {
+  ({
+    visible,
+    setNumTargets,
+    hideModalVisible,
+    setNewTarget,
+    newTargetList,
+  }) => {
+    const id = useSelector(trackerIDSelector);
     const [value, setValue] = React.useState("");
+    const [error, setError] = React.useState("");
     const add = React.useCallback(() => {
-      setNewTarget((l: Array<string>) => [...l, ...[value]]);
-      hideModalVisible();
-      setNumTargets((l: number) => l - 1);
-      //TODO:
-      // Check duplicates
-      // Check adding own id
-    }, [value, hideModalVisible, setNewTarget]);
+      const matchRegex = /^\w+$/;
+      if (matchRegex.test(value)) {
+        setNewTarget((l: Array<string>) => [...l, ...[value]]);
+        hideModalVisible();
+        setNumTargets((l: number) => l - 1);
+      } else if (value === id) {
+        setError("Don't track yourself!");
+      } else if (newTargetList.includes(value)) {
+        setError("ID Exists!");
+      } else {
+        setError("Invalid ID");
+      }
+    }, [value, hideModalVisible, setNewTarget, newTargetList]);
+    const onChangeTextReset = React.useCallback(
+      (val: string) => {
+        setError("");
+        setValue(val);
+      },
+      [setValue, setError]
+    );
+    const label = "Track an ID: ";
+    const labelWithError = error !== "" ? label + error : label;
     return (
       <Modal
         style={{
@@ -109,12 +140,12 @@ const AddModal: any = React.memo(
       >
         <Card disabled={true}>
           <Input
-            label="Track an ID:"
+            label={labelWithError}
             style={style.addInput}
             status="basic"
             placeholder="ID"
             value={value}
-            onChangeText={setValue}
+            onChangeText={onChangeTextReset}
           />
           <Button onPress={add}>Add</Button>
         </Card>
@@ -125,7 +156,7 @@ const AddModal: any = React.memo(
 
 export default () => {
   const { theme } = React.useContext(ThemeContext);
-  const [addVisible, setAddVisible] = React.useState<boolean>(true);
+  const [addVisible, setAddVisible] = React.useState<boolean>(false);
   const [checked, setChecked] = React.useState<Array<boolean>>([]);
   const targetCoords = useSelector(targetsCoordsSelector);
   const [numTargets, setNumTargets] = React.useState(
@@ -135,7 +166,7 @@ export default () => {
   const [newTargetList, setNewTargetList] = React.useState<Array<string>>([]);
 
   // Callbacks
-  const onCheck = React.useCallback(
+  const onCheckUncheck = React.useCallback(
     (i: number, name: string) => {
       let newChecked = [];
       newChecked = [...checked];
@@ -150,9 +181,16 @@ export default () => {
     },
     [checked, setChecked, setDeleteTargets]
   );
-  const onItemUncheck = React.useCallback(
+  const onItemUncheckIcon = React.useCallback(
     (props) => RemoveIcon(props, deleteTarget),
     [deleteTarget]
+  );
+  const onRemoveNewTarget = React.useCallback(
+    (name: string) => {
+      setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
+      setNumTargets((i: number) => i + 1);
+    },
+    [setNewTargetList]
   );
   const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
   const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
@@ -163,7 +201,7 @@ export default () => {
       const val: boolean = checked[i];
       const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
       return (
-        <View style={style.CheckBoxWrapper}>
+        <View key={i + "v"} style={style.CheckBoxWrapper}>
           <CheckBox
             title={l.name}
             containerStyle={cbTheme}
@@ -172,7 +210,7 @@ export default () => {
             uncheckedColor="#50515B"
             checkedColor="#6D363F"
             checked={val}
-            onPress={() => onCheck(i, l.name)}
+            onPress={() => onCheckUncheck(i, l.name)}
           />
           {OnlineIcon(l.lastUpdate)}
         </View>
@@ -181,18 +219,25 @@ export default () => {
     return inputs;
   }, [checked, targetCoords, theme]);
 
-  // create new targets
+  // Create new targets
   const newTargets = React.useMemo(() => {
     const inputs = newTargetList.map((name: string, i: number) => (
-      // TODO:
-      // Deleting new target
-      // Adding icon
-      <Text key={i}>{name}</Text>
+      <View key={i + "v"} style={style.newTargetWrapper}>
+        <Button
+          key={i}
+          appearance="ghost"
+          status="basic"
+          accessoryLeft={MinusIcon}
+          onPress={() => onRemoveNewTarget(name)}
+        >
+          {name}
+        </Button>
+      </View>
     ));
     return inputs;
   }, [newTargetList]);
 
-  // populate checked items with default values
+  // Populate checked items with default values
   useEffect(() => {
     let ch = [];
     for (let i = 0; i < numTargets; i++) {
@@ -216,9 +261,11 @@ export default () => {
           />
         ) : null}
       </View>
+
       {/* Add modal */}
       <AddModal
         visible={addVisible}
+        newTargetList={newTargetList}
         setNumTargets={setNumTargets}
         setNewTarget={setNewTargetList}
         hideModalVisible={hideModalVisible}
@@ -245,7 +292,7 @@ export default () => {
         <Button
           appearance="ghost"
           status="basic"
-          accessoryRight={onItemUncheck}
+          accessoryRight={onItemUncheckIcon}
         >
           Untrack
         </Button>
