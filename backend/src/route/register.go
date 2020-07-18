@@ -12,5 +12,6 @@ func Register(e *echo.Echo) {
 	e.POST("/api/addtarget", AddTargetHandler)
 	e.POST("/api/deletetrackerontarget", TargetDeleteTrackerHandler)
 	e.GET("/api/location", LocationHandler)
+	e.GET("/ping", PingHandler)
 	e.DELETE("/api/deletetracker", TrackerDeleteHandler)
 }

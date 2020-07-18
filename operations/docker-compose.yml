@@ -4,20 +4,22 @@ services:
   backend:
     build: ./backend
     ports:
-      - 5000:5000
+      - 127.0.0.1:5000:5000
     environment:
       SECRET_KEY: $SECRET_KEY
       SECRET_CLIENT_KEY: $SECRET_CLIENT_KEY
       MONGODB: $MONGODB
       PORT: $PORT
       ENV: $ENV
+    depends_on:
+      - mongo
 
 
   mongo:
     image: mongo
     restart: always
     ports:
-      - 27017:27017
+      - 127.0.0.1:27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
