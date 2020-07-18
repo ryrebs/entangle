@@ -24,14 +24,22 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Secure())
 	e.Use(middleware.CORS())
-	e.Use(route.ValidateAPIRequest)
 
+	// Secure requests activity on location routes
+	locationGroup := e.Group("/location")
+	locationGroup.Use(route.ValidateAPIRequest)
+
+	// Init a db
 	db.InitDBClient()
 
-	if os.Getenv("ENV") != "production" {
+	// Include docs on dev
+	if os.Getenv("ENV") != "prod" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
+	// Register all routes
 	route.Register(e)
+
+	// Start the server
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
