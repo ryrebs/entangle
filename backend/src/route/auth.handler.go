@@ -194,7 +194,7 @@ func (c *claims) validateClaim() (err error) {
 	return nil
 }
 
-// ValidateAPIRequest - check valid token and an existing tracker that is not
+// ValidateAPIRequest - check valid token and an existing tracker
 func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		p := c.Path()
@@ -203,7 +203,7 @@ func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
 			Status:  http.StatusBadRequest,
 			Data:    nil,
 		}
-		if strings.Contains(p, "api") {
+		if strings.Contains(p, "mobile") {
 			token := c.Request().Header.Get(echo.HeaderAuthorization)
 			clm, ok := validateServerToken(token)
 			if !ok {

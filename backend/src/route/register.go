@@ -6,12 +6,12 @@ import (
 
 // Register - register all routes here
 func Register(e *echo.Echo) {
+	e.GET("/ping", PingHandler)
 	e.POST("/auth", AuthenticateHandler)
 	e.POST("/auth/refresh", RefreshHandler)
-	e.POST("/api/updatelocation", UpdateTrackerLocationHandler)
-	e.POST("/api/addtarget", AddTargetHandler)
-	e.POST("/api/deletetrackerontarget", TargetDeleteTrackerHandler)
-	e.GET("/api/location", LocationHandler)
-	e.GET("/ping", PingHandler)
-	e.DELETE("/api/deletetracker", TrackerDeleteHandler)
+	e.POST("/mobile/updatelocation", UpdateTrackerLocationHandler)
+	e.POST("/mobile/addtarget", AddTargetHandler)
+	e.POST("/mobile/deletetrackerontarget", TargetDeleteTrackerHandler)
+	e.GET("/mobile/location", LocationHandler)
+	e.DELETE("/mobile/deletetracker", TrackerDeleteHandler)
 }
