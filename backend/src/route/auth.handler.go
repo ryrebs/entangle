@@ -84,7 +84,7 @@ func RefreshHandler(c echo.Context) (err error) {
 	return c.JSON(http.StatusBadRequest, invalidRequest)
 }
 
-// AuthenticateHandler - handles /authenticate route
+// AuthenticateHandler - handles /auth route
 // @tags Auth
 // @Summary Creates token for subscribers
 // @Description TODO
@@ -92,7 +92,7 @@ func RefreshHandler(c echo.Context) (err error) {
 // @Produce  json
 // @Param id formData string true "id of connecting client"
 // @Header 200 {string} Token
-// @Router /authenticate [post]
+// @Router /auth [post]
 func AuthenticateHandler(c echo.Context) (err error) {
 	user := &GenericUser{}
 	invalidRequest := Response{
