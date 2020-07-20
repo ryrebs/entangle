@@ -1,7 +1,5 @@
-
-import createAction from '@reduxjs/toolkit';
-import ApiService from '../service/api/Api.service';
-import { updateReducerAction } from '../store/root.reducer';
+import { createAction } from "@reduxjs/toolkit";
+import ApiService from "../service/api/Api.service";
 
 /**
  *  Sample dispatching requests
@@ -9,12 +7,12 @@ import { updateReducerAction } from '../store/root.reducer';
  *  addRequestAction(payload)
  */
 /** -- Sample action that changes the reducer */
-export const addRequestAction = payload => ({
-    type: 'REQUEST',
-    method: ApiService.getApi().post,
-    route: '/post/route',
-    resultReducerAction: updateReducerAction,
-    payload,
+export const addRequestAction = (payload) => ({
+  type: "REQUEST",
+  method: ApiService.getApi().post,
+  route: "/post/route",
+  resultReducerAction: () => {}, // fn is a reducer action
+  payload,
 });
 
 /** Requests are intercepted by saga,
@@ -24,5 +22,5 @@ export const addRequestAction = payload => ({
  */
 /** sample action to be intercepted by saga */
 export const refreshUserAfterDeleteAction = createAction(
-    'REQUEST_REFRESH_USER_AFTER_DELETE',
+  "REQUEST_REFRESH_USER_AFTER_DELETE"
 );

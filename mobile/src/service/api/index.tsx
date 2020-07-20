@@ -1,35 +1,36 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from "axios";
 import {
   successResponseInterceptor,
   errorResponseInterceptor,
-} from './api.interceptors';
-import api from './Api.service';
+} from "./api.interceptors";
+import api from "./Api.service";
+import Constants from "expo-constants";
 
 const TIMEOUT = 300 * 1000;
-const DEV_HOST = "localhost:5000"
-const SCHEME = process.env.NODE_ENV === "development" ? "http://" : "https://"
-const DOMAIN = process.env.REACT_APP_API_URL || DEV_HOST
 
-export const API_HOST = SCHEME + DOMAIN
-export const createAxiosInstance = (url) => {
+export const API_HOST = Constants.manifest.extra.EXPO_API;
+
+export const createAxiosInstance = (url: string) => {
   const axiosApi = axios.create({
     baseURL: url,
     timeout: TIMEOUT,
   });
   axiosApi.interceptors.response.use(
     successResponseInterceptor,
-    errorResponseInterceptor,
+    errorResponseInterceptor
   );
-  axiosApi.defaults.headers.common.Accept = 'application/json; charset=utf-8';
+  axiosApi.defaults.headers.common.Accept = "application/json; charset=utf-8";
   return axiosApi;
 };
 
-const setBearerToken = apiInst => {
+const setBearerToken = (apiInst: AxiosInstance) => {
   // eslint-disable-next-line no-param-reassign
-  apiInst.defaults.headers.common.Authorization = '<set bearer here..>';
+  apiInst.defaults.headers.common.Authorization = "<set bearer here..>";
 };
 
 export default () => {
   api.initialize(createAxiosInstance(API_HOST));
   setBearerToken(api.getApi().apiInst);
 };
+
+export { api as ApiService };

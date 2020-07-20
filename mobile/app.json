@@ -2,11 +2,7 @@
   "expo": {
     "name": "Entangle",
     "slug": "Entangle",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,26 +14,29 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "buildNumber": "1.0.0",
       "bundleIdentifier": "com.xcrap.entangle",
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription":"",
+        "NSLocationWhenInUseUsageDescription": "",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "",
-        "NSLocationAlwaysUsageDescription":"",
-        "UIBackgroundModes": [
-          "location",
-          "fetch"
-        ]
+        "NSLocationAlwaysUsageDescription": "",
+        "UIBackgroundModes": ["location", "fetch"]
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCvjP3EbFqURvrhoQEUabr5M5gKW0Dc3vo"
       }
     },
     "android": {
       "package": "com.xcrap.entangle",
-      "versionCode": 1
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBcETUAqw1yypQeX7FjxrY9E7ppp_g695Y"
+        }
+      }
     }
   }
 }

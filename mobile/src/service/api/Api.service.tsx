@@ -25,7 +25,7 @@ class Api {
     return response;
   };
 
-  delete = async route => {
+  delete = async (route) => {
     const response = await this.apiInst.delete(route);
     return response;
   };
@@ -35,12 +35,12 @@ const api = (() => {
   // eslint-disable-next-line no-underscore-dangle
   let _api;
   return {
-    initialize: apiInst => {
+    initialize: (apiInst) => {
       if (_api === undefined) _api = new Api(apiInst);
     },
     getApi: () => {
       if (_api !== null) return _api;
-      throw Error('Initialize api first.');
+      throw Error("Initialize api first.");
     },
   };
 })();
