@@ -32,14 +32,21 @@ const targetsCoordsSelector = createSelector(
   (tracker) => tracker["tracker/getTargets"].response
 );
 
-// TODO: decode request token containing id
-const getIDFromTokenClaims = (token: string): string => {
-  return "";
-};
+const registrationSelector = createSelector(
+  (state: targetState) => state.tracker,
+  (tracker) => {
+    const { loading, token, error } = tracker["tracker/token"];
+    return {
+      loading,
+      token,
+      error,
+    };
+  }
+);
 
 const initialState = {
   "tracker/id": {
-    id: "1234567",
+    id: "",
   },
   "tracker/token": {
     token: null,
@@ -123,13 +130,15 @@ const trackerSlice = createSlice({
   reducers: {
     registerReducerAction: (state, action) => {
       const stateKeyToken = "tracker/token";
-      const stateKeyID = "tracker/id";
-      const { data } = action.payload.response;
-      state[stateKeyToken].token = data;
-      state[stateKeyToken].loading = action.payload.loading;
-      state[stateKeyToken].error = action.payload.error;
-      state[stateKeyToken].errorMsg = action.payload.errorMsg;
-      state[stateKeyID].id = getIDFromTokenClaims(data);
+      if (action.payload.response !== null) {
+        const { data, message } = action.payload.response;
+        state[stateKeyToken].token = data;
+        state[stateKeyToken].errorMsg = message;
+      } else {
+        state[stateKeyToken].loading = action.payload.loading;
+        state[stateKeyToken].error = action.payload.error;
+        state[stateKeyToken].errorMsg = action.payload.errorMsg;
+      }
     },
     getTargetsReducerAction: (state, action) => {
       const stateKey = "tracker/getTargets";
@@ -161,6 +170,7 @@ const {
 } = actions;
 
 export {
+  registrationSelector,
   targetsCoordsSelector,
   trackerCoordsSelector,
   trackerIDSelector,

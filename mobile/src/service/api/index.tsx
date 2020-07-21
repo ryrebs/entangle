@@ -30,7 +30,7 @@ const setBearerToken = (apiInst: AxiosInstance) => {
 
 export default () => {
   api.initialize(createAxiosInstance(API_HOST));
-  setBearerToken(api.getApi().apiInst);
+  setBearerToken(api.getApi());
 };
 
 export { api as ApiService };
