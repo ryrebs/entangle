@@ -6,13 +6,13 @@ import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
 import { useSelector } from "react-redux";
 import * as eva from "@eva-design/eva";
-
+import * as Location from "expo-location";
+import { getPermissionForLocationAync } from "./register";
 import {
   targetsCoordsSelector,
   trackerCoordsSelector,
 } from "../tracker/store/reducer";
 import TargetModal from "./target.modal";
-import useLocation from "../../hook/location";
 import UtilModal from "../../utils/modal.util";
 import { styles, mapStyle } from "./style";
 import { ThemeContext } from "../../context/ThemeContextProvider";
@@ -44,23 +44,29 @@ const targetIcon = (targetsDetected: Boolean) => {
 };
 
 // Effect: Zoom into a provided coords for self location
-const useZoomInToCoords = (map, coords, selfLocationOn, locationEnabled) => {
+const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   React.useEffect(() => {
-    if (coords != null && selfLocationOn && locationEnabled)
-      map.current.animateToRegion({
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      });
-    else
-      map.current.animateToRegion({
-        latitude: 40,
-        longitude: 40,
-        latitudeDelta: 50,
-        longitudeDelta: 90,
-      });
-  }, [selfLocationOn]);
+    (async () => {
+      if (
+        coords != null &&
+        selfLocationOn &&
+        (await Location.hasServicesEnabledAsync())
+      )
+        map.current.animateToRegion({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+      else
+        map.current.animateToRegion({
+          latitude: 40,
+          longitude: 40,
+          latitudeDelta: 50,
+          longitudeDelta: 90,
+        });
+    })();
+  }, [selfLocationOn, map, coords]);
 };
 
 export default () => {
@@ -72,37 +78,37 @@ export default () => {
   const [selfLocationOn, setSelfLocation] = React.useState(false);
   const [isTargetModalVisible, setIsTargetModalVisible] = React.useState(false);
   const [permissionModal, setPermissionModal] = React.useState(false);
-  const { locationEnabled, allowed } = useLocation();
 
   // Effects
-  useZoomInToCoords(mapRef, coords, selfLocationOn, locationEnabled);
+  useZoomInToCoords(mapRef, coords, selfLocationOn);
 
   // Callbacks
-  const onLocationIconPress = React.useCallback(
-    (e) => {
-      const shouldModalVisible = !locationEnabled || !allowed;
-      if (shouldModalVisible) {
-        setPermissionModal(true);
-      } else setSelfLocation(!selfLocationOn);
-    },
-    [
-      setSelfLocation,
-      selfLocationOn,
-      setPermissionModal,
-      locationEnabled,
-      allowed,
-    ]
-  );
-  const locationIconComp = React.useCallback(() => {
-    const isColorActive = selfLocationOn && locationEnabled && allowed;
+  const onLocationIconPress = React.useCallback(async () => {
+    const shouldModalVisible = !(
+      (await Location.hasServicesEnabledAsync()) ||
+      (await getPermissionForLocationAync())
+    );
+    if (shouldModalVisible) {
+      setPermissionModal(true);
+    } else setSelfLocation(!selfLocationOn);
+  }, [setSelfLocation, selfLocationOn, setPermissionModal]);
+
+  const locationIconComp = React.useCallback(async () => {
+    const isColorActive =
+      selfLocationOn &&
+      (await Location.hasServicesEnabledAsync()) &&
+      (await getPermissionForLocationAync());
     return locationIcon(isColorActive);
   }, [selfLocationOn]);
+
   const targetIconComp = React.useCallback(() => {
     return targetIcon(targetCoords.length > 0);
   }, [targetCoords, targetIcon]);
+
   const onToggleMenuPress = React.useCallback(() => {
     setIsTargetModalVisible(true);
   }, [setIsTargetModalVisible]);
+
   const targetCoordsHandler = React.useCallback(() => {
     setIsTargetModalVisible(false);
   }, [setIsTargetModalVisible]);
