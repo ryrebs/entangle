@@ -17,6 +17,9 @@ import { trackerIDSelector } from "../tracker/store/reducer";
 import TargetScreen from "./target";
 import MapScreen from "./map";
 import { ThemeContext } from "../../context/ThemeContextProvider";
+import * as Location from "expo-location";
+import { LOCATION_TASK_NAME } from "./register";
+
 const { Navigator, Screen } = createBottomTabNavigator();
 
 const MapIcon = (props: any) => <Icon {...props} name="globe" />;
@@ -44,7 +47,10 @@ const LogoutIcon = (props) => {
 };
 
 const LogoutModal = ({ isModalVisible, toggleModal }) => {
-  const selfDestruct = React.useCallback(() => {
+  const selfDestruct = React.useCallback(async () => {
+    // Remove location background task
+    await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+    
     toggleModal();
   }, []);
   return (
@@ -59,7 +65,9 @@ const LogoutModal = ({ isModalVisible, toggleModal }) => {
         <Text category="s2" style={{ margin: 20 }}>
           Logout and Delete your data on server?
         </Text>
-        <Button appearance="outline" status="danger" onPress={selfDestruct}>YES</Button>
+        <Button appearance="outline" status="danger" onPress={selfDestruct}>
+          YES
+        </Button>
       </Card>
     </Modal>
   );
