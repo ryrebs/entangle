@@ -11,11 +11,6 @@ const targetResponseSelector = createSelector(
   (tracker) => tracker["tracker/getTargets"].response
 );
 
-const trackerIDSelector = createSelector(
-  (state: targetState) => state.tracker,
-  (tracker) => tracker["tracker/id"].id
-);
-
 const trackerCoordsSelector = createSelector(
   (state: targetState) => state.tracker,
   (tracker) => {
@@ -35,21 +30,20 @@ const targetsCoordsSelector = createSelector(
 const registrationSelector = createSelector(
   (state: targetState) => state.tracker,
   (tracker) => {
-    const { loading, token, error } = tracker["tracker/token"];
+    const { loading, token, error, id } = tracker["tracker/token"];
     return {
       loading,
       token,
       error,
+      id,
     };
   }
 );
 
 const initialState = {
-  "tracker/id": {
-    id: "",
-  },
   "tracker/token": {
     token: null,
+    id: null,
     loading: false,
     error: false,
     errorMsg: "",
@@ -132,13 +126,14 @@ const trackerSlice = createSlice({
       const stateKeyToken = "tracker/token";
       if (action.payload.response !== null) {
         const { data, message } = action.payload.response;
-        state[stateKeyToken].token = data;
+        const { token, id } = data;
+        state[stateKeyToken].token = token;
+        state[stateKeyToken].id = id;
         state[stateKeyToken].errorMsg = message;
-      } else {
-        state[stateKeyToken].loading = action.payload.loading;
-        state[stateKeyToken].error = action.payload.error;
-        state[stateKeyToken].errorMsg = action.payload.errorMsg;
       }
+      state[stateKeyToken].loading = action.payload.loading;
+      state[stateKeyToken].error = action.payload.error;
+      state[stateKeyToken].errorMsg = action.payload.errorMsg;
     },
     getTargetsReducerAction: (state, action) => {
       const stateKey = "tracker/getTargets";
@@ -173,7 +168,6 @@ export {
   registrationSelector,
   targetsCoordsSelector,
   trackerCoordsSelector,
-  trackerIDSelector,
   targetResponseSelector,
   getTargetsReducerAction,
   updateCoordsReducerAction,

@@ -56,6 +56,7 @@ export default React.memo(
       setIsTargetModalVisible(false);
     }, []);
 
+    // TODO: fix dependency
     const zoomToCoords = React.useCallback((coords) => {
       if (coords != null && map != null)
         map.current.animateToRegion({
@@ -74,6 +75,7 @@ export default React.memo(
       closeModal();
     }, []);
 
+    // TODO:  fix callback , use other state if possible
     const renderItem = React.useCallback(({ item }) => {
       return <Item item={item} zoomToCoords={() => zoomToCoords(item)} />;
     }, []);

@@ -1,10 +1,11 @@
-import { call, all, spawn } from 'redux-saga/effects';
-import requestSaga from './request/request.saga';
+import { call, all, spawn } from "redux-saga/effects";
+import requestSaga from "./request/request.saga";
+import authSaga from "./auth/auth.saga";
 
 export default function* rootSaga() {
-  const sagas = [requestSaga];
+  const sagas = [requestSaga, authSaga];
   yield all(
-    sagas.map(saga =>
+    sagas.map((saga) =>
       // eslint-disable-next-line func-names
       spawn(function* () {
         while (true) {
@@ -15,7 +16,7 @@ export default function* rootSaga() {
             console.error(e);
           }
         }
-      }),
-    ),
+      })
+    )
   );
 }

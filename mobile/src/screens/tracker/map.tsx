@@ -69,6 +69,13 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   }, [selfLocationOn, map, coords]);
 };
 
+const isLocationEnabled = async () => {
+  return (
+    (await Location.hasServicesEnabledAsync()) ||
+    (await getPermissionForLocationAync())
+  );
+};
+
 export default () => {
   // Hooks
   const mapRef = React.useRef();
@@ -83,21 +90,16 @@ export default () => {
   useZoomInToCoords(mapRef, coords, selfLocationOn);
 
   // Callbacks
-  const onLocationIconPress = React.useCallback(async () => {
-    const shouldModalVisible = !(
-      (await Location.hasServicesEnabledAsync()) ||
-      (await getPermissionForLocationAync())
-    );
-    if (shouldModalVisible) {
+  const onLocationIconPress = React.useCallback(() => {
+    const isLocEnabled = (async () => await isLocationEnabled())();
+    if (!isLocEnabled) {
       setPermissionModal(true);
     } else setSelfLocation(!selfLocationOn);
   }, [setSelfLocation, selfLocationOn, setPermissionModal]);
 
-  const locationIconComp = React.useCallback(async () => {
-    const isColorActive =
-      selfLocationOn &&
-      (await Location.hasServicesEnabledAsync()) &&
-      (await getPermissionForLocationAync());
+  const locationIconComp = React.useCallback(() => {
+    const isLocEnabled = (async () => await isLocationEnabled())();
+    const isColorActive = selfLocationOn && isLocEnabled;
     return locationIcon(isColorActive);
   }, [selfLocationOn]);
 

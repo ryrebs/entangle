@@ -19,6 +19,8 @@ import MapScreen from "./map";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as Location from "expo-location";
 import { LOCATION_TASK_NAME } from "./register";
+import * as TaskManager from "expo-task-manager";
+import { AuthContext } from "../../context/AuthContextProvider";
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -49,8 +51,8 @@ const LogoutIcon = (props) => {
 const LogoutModal = ({ isModalVisible, toggleModal }) => {
   const selfDestruct = React.useCallback(async () => {
     // Remove location background task
-    await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
-    
+    if (await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME))
+      await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
     toggleModal();
   }, []);
   return (
@@ -98,7 +100,8 @@ export const renderLeftActions = () => {
 };
 
 export default () => {
-  const id = useSelector(trackerIDSelector);
+  const { id } = React.useContext(AuthContext);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopNavigation

@@ -2,7 +2,7 @@ import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Layout, Button } from "@ui-kitten/components";
 import { AuthContext } from "../../context/AuthContextProvider";
-import { Divider, TopNavigation } from "@ui-kitten/components";
+import { Divider, TopNavigation, Spinner } from "@ui-kitten/components";
 import { renderRightActions } from "./main";
 import { requestRegisterAction } from "./store/requests";
 import { useSelector, useDispatch } from "react-redux";
@@ -40,10 +40,24 @@ export default () => {
         else console.log("Please Try Again!");
       }
     } else {
-         // TODO: Replace with modal
+      // TODO: Replace with modal
       console.log("Location needs to be turned on and permission enabled.");
     }
   }, [dispatch, tokenCreate, requestRegisterAction]);
+
+  // TODO: remove, Simulate registration for dev
+  const regDummy = async () => {
+    await getPermissionForLocationAync();
+    let location: any = await Location.getCurrentPositionAsync({});
+    store.dispatch(updateCoordsReducerAction({ location }));
+    authDispatchLogin({
+      isAuthenticated: true,
+      fetching: false,
+      token: "asdasd",
+      id: "123123",
+      error: null,
+    });
+  };
 
   // Api registration effect
   React.useEffect(() => {
@@ -58,6 +72,7 @@ export default () => {
     }
   }, [error, loading, token, id]);
 
+  // TODO: Add loading effect
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopNavigation
@@ -69,14 +84,18 @@ export default () => {
       <Layout
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
       >
-        <Button
-          size="small"
-          status="basic"
-          appearance="outline"
-          onPress={onRegisterLogin}
-        >
-          Create Tracker ID
-        </Button>
+        {loading ? (
+          <Spinner status="info" />
+        ) : (
+          <Button
+            size="small"
+            status="basic"
+            appearance="outline"
+            onPress={regDummy}
+          >
+            Create Tracker ID
+          </Button>
+        )}
         <Divider />
       </Layout>
     </SafeAreaView>
@@ -85,11 +104,11 @@ export default () => {
 
 // Ask permission for using location
 export const getPermissionForLocationAync = async () => {
-  let { status } = await Location.requestPermissionsAsync();
-  if (status !== "granted") {
-    return false;
+  let { granted } = await Location.requestPermissionsAsync();
+  if (granted) {
+    return true;
   }
-  return true;
+  return false;
 };
 
 // Initialize background location update options
@@ -113,6 +132,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   }
   if (data) {
     const { locations }: any = data;
+    console.log(locations);
     if (locations !== null && locations.length > 0)
       store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
   }

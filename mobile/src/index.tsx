@@ -15,17 +15,17 @@ enableScreens();
 setUpApi();
 
 const App = () => (
-  <AuthContextProvider>
-    <ThemeProvider>
-      <Provider store={store}>
+  <ThemeProvider>
+    <Provider store={store}>
+      <AuthContextProvider>
         <PersistGate loading={null} persistor={persistor}>
           <SafeAreaProvider>
             <Main />
           </SafeAreaProvider>
         </PersistGate>
-      </Provider>
-    </ThemeProvider>
-  </AuthContextProvider>
+      </AuthContextProvider>
+    </Provider>
+  </ThemeProvider>
 );
 
 export { store };

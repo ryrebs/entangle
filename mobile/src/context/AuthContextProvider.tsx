@@ -5,6 +5,9 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { updateAuthAction } from "../store/auth/auth.saga";
+import { useDispatch, useSelector } from "react-redux";
+import { authSelector } from "../store/auth/auth.reducer";
 
 export const AuthContext: any = createContext({});
 
@@ -37,13 +40,13 @@ const authReducer = (state: authState, action: any) => {
         fetching: action.payload.fetching,
         token: action.payload.token,
         id: action.payload.id,
-        error: "",
+        error: null,
       };
     case "logout":
       return {
         ...state,
         isAuthenticated: false,
-        error: "",
+        error: null,
         token: "",
         id: "",
         fetching: false,
@@ -66,20 +69,25 @@ const AuthContextProvider: React.FC<authProps> = (props) => {
   // hooks
   const [state, dispatch] = useReducer(authReducer, initialState);
   const [propsState, setProps] = useState<any | null>(null);
+  const dispatchMain = useDispatch();
+  const { authenticated, id, token } = useSelector(authSelector);
 
   // Helpers functions for dispatch
   const authDispatchLogin = useCallback(
     (params: authState) => {
-      console.log("Dispatch: login::", params);
       dispatch({ type: "authenticated", payload: { ...params } });
+      dispatchMain(updateAuthAction({ ...params }));
     },
-    [dispatch]
+    [dispatch, dispatchMain]
   );
   const authDispatchLogout = useCallback(
     (params: authState) => {
       dispatch({ type: "logout", payload: { ...params } });
+      dispatchMain(
+        updateAuthAction({ isAuthenticated: false, token: null, id: null })
+      );
     },
-    [dispatch]
+    [dispatch, dispatchMain]
   );
   const authDispatchError = useCallback(
     (params: authState) => {
@@ -87,6 +95,21 @@ const AuthContextProvider: React.FC<authProps> = (props) => {
     },
     [dispatch]
   );
+
+  // Login automatically if authenticated
+  useEffect(() => {
+    dispatch({
+      type: "authenticated",
+      payload: {
+        isAuthenticated: authenticated,
+        token,
+        id,
+        loading: false,
+        error: null,
+      },
+    });
+  }, [authenticated, id, token]);
+
   useEffect(() => {
     setProps(props.children);
   }, [props.children]);
@@ -103,6 +126,7 @@ const AuthContextProvider: React.FC<authProps> = (props) => {
         authDispatchError,
         error,
         fetching,
+        id,
       }}
     >
       {propsState}
