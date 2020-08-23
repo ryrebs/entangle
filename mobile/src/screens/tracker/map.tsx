@@ -69,6 +69,16 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   }, [selfLocationOn, map, coords]);
 };
 
+// Effect for fetching coords
+const useFetchTargetCoords = () => {
+  React.useEffect(() => {
+    let i = 0;
+    setInterval(() => {
+      console.log(i++);
+    }, 3000);
+  }, []);
+};
+
 const isLocationEnabled = async () => {
   return (
     (await Location.hasServicesEnabledAsync()) ||
@@ -88,6 +98,8 @@ export default () => {
 
   // Effects
   useZoomInToCoords(mapRef, coords, selfLocationOn);
+
+  useFetchTargetCoords();
 
   // Callbacks
   const onLocationIconPress = React.useCallback(() => {
