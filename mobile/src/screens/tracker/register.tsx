@@ -7,7 +7,6 @@ import { renderRightActions } from "./main";
 import { requestRegisterAction } from "./store/requests";
 import { useSelector, useDispatch } from "react-redux";
 import { registrationSelector } from "./store/reducer";
-import { trackerCoordsSelector } from "../tracker/store/reducer";
 import * as Location from "expo-location";
 import tokenCreate from "../../utils/token.util";
 import * as TaskManager from "expo-task-manager";
@@ -21,40 +20,43 @@ export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
 export default () => {
   const { authDispatchLogin } = React.useContext(AuthContext);
-  const { loading, error, token } = useSelector(registrationSelector);
-  const coords = useSelector(trackerCoordsSelector);
+  const { loading, error, token, id } = useSelector(registrationSelector);
   const dispatch = useDispatch();
 
   const onRegisterLogin = React.useCallback(async () => {
     let enabled = await Location.hasServicesEnabledAsync();
     if (enabled && (await getPermissionForLocationAync())) {
+      // Start background location task updates
       await initBackgroundLocationTaskAync();
 
       // Immediately get the current position
       // don't wait for the background location task to start
       let location: any = await Location.getCurrentPositionAsync({});
-
       if (location !== null) {
-        const { latitude, longitude } = location;
-        const token = tokenCreate(latitude, longitude);
-        dispatch(requestRegisterAction(token));
+        const { coords } = location;
+        const token = tokenCreate(coords.latitude, coords.longitude);
+        if (token !== null) dispatch(requestRegisterAction(token));
+        // TODO: Replace with modal
+        else console.log("Please Try Again!");
       }
     } else {
+         // TODO: Replace with modal
       console.log("Location needs to be turned on and permission enabled.");
     }
   }, [dispatch, tokenCreate, requestRegisterAction]);
 
   // Api registration effect
   React.useEffect(() => {
-    if (!error && !loading && token !== null)
+    if (!error && !loading && token !== null && id !== null) {
       authDispatchLogin({
         isAuthenticated: true,
         fetching: false,
-        token: token,
-        id: "123456",
+        token,
+        id,
         error: null,
       });
-  }, [loading, error, token]);
+    }
+  }, [error, loading, token, id]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -111,7 +113,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   }
   if (data) {
     const { locations }: any = data;
-    if (locations != null && locations.length > 0)
+    if (locations !== null && locations.length > 0)
       store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
   }
 });
