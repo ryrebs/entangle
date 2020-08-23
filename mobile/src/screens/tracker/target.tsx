@@ -93,67 +93,67 @@ const MinusIcon = (props: any) => {
   return <Icon {...props} fill="#0D9FA9" name="minus" />;
 };
 
-const AddModal: any = React.memo(
-  ({
-    visible,
-    setNumTargets,
-    hideModalVisible,
-    setNewTarget,
-    newTargetList,
-  }) => {
-    const { id } = useContext(AuthContext);
-    const [value, setValue] = React.useState("");
-    const [error, setError] = React.useState("");
-    const add = React.useCallback(() => {
-      const matchRegex = /^\w+$/;
-      if (matchRegex.test(value)) {
-        setNewTarget((l: Array<string>) => [...l, ...[value]]);
-        hideModalVisible();
-        setNumTargets((l: number) => l - 1);
-      } else if (value === id) {
-        setError("Don't track yourself!");
-      } else if (newTargetList.includes(value)) {
-        setError("ID Exists!");
-      } else {
-        setError("Invalid ID");
-      }
-    }, [value, hideModalVisible, setNewTarget, newTargetList]);
-    const onChangeTextReset = React.useCallback(
-      (val: string) => {
-        setError("");
-        setValue(val);
-      },
-      [setValue, setError]
-    );
-    const label = "Track an ID: ";
-    const labelWithError = error !== "" ? label + error : label;
-    return (
-      <Modal
-        style={{
-          padding: 24,
-          flex: 1,
-          justifyContent: "space-around",
-          top: Dimensions.get("window").height * 0.2,
-        }}
-        visible={visible}
-        backdropStyle={style.backdrop}
-        onBackdropPress={hideModalVisible}
-      >
-        <Card disabled={true}>
-          <Input
-            label={labelWithError}
-            style={style.addInput}
-            status="basic"
-            placeholder="ID"
-            value={value}
-            onChangeText={onChangeTextReset}
-          />
-          <Button onPress={add}>Add</Button>
-        </Card>
-      </Modal>
-    );
-  }
-);
+const AddModal: any = ({
+  visible,
+  setNumTargets,
+  hideModalVisible,
+  setNewTarget,
+  newTargetList,
+}) => {
+  const { id } = useContext(AuthContext);
+  const [value, setValue] = React.useState("");
+  const [error, setError] = React.useState("");
+  const add = React.useCallback(() => {
+    const matchRegex = /^\w+$/;
+    if (value === id) {
+      setError("Don't track yourself!");
+    } else if (newTargetList.includes(value)) {
+      setError("ID Exists!");
+    } else if (matchRegex.test(value)) {
+      setNewTarget((l: Array<string>) => [...l, ...[value]]);
+      hideModalVisible();
+      setNumTargets((l: number) => l - 1);
+    } else {
+      setError("Invalid ID");
+    }
+  }, [value, hideModalVisible, setNewTarget, newTargetList]);
+  const onChangeTextReset = React.useCallback(
+    (val: string) => {
+      // TODO Fix warning: cannot update while rendering.
+      setError("");
+      setValue(val);
+    },
+    [setValue, setError]
+  );
+
+  const label = "Track an ID: ";
+  const labelWithError = error !== "" ? label + error : label;
+  return (
+    <Modal
+      style={{
+        padding: 24,
+        flex: 1,
+        justifyContent: "space-around",
+        top: Dimensions.get("window").height * 0.2,
+      }}
+      visible={visible}
+      backdropStyle={style.backdrop}
+      onBackdropPress={hideModalVisible}
+    >
+      <Card disabled={true}>
+        <Input
+          label={labelWithError}
+          style={style.addInput}
+          status="basic"
+          placeholder="ID"
+          value={value}
+          onChangeText={onChangeTextReset}
+        />
+        <Button onPress={add}>Add</Button>
+      </Card>
+    </Modal>
+  );
+};
 
 export default () => {
   const { theme } = React.useContext(ThemeContext);
@@ -191,52 +191,46 @@ export default () => {
       setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
       setNumTargets((i: number) => i + 1);
     },
-    [setNewTargetList]
+    [setNewTargetList, setNumTargets]
   );
   const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
   const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
 
   // create checkboxes of tracked coordinates
-  const targetInputs = React.useMemo(() => {
-    const inputs = targetCoords.map((l: any, i: number) => {
-      const val: boolean = checked[i];
-      const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
-      return (
-        <View key={i + "v"} style={style.CheckBoxWrapper}>
-          <CheckBox
-            title={l.name}
-            containerStyle={cbTheme}
-            key={i}
-            checkedIcon="dot-circle-o"
-            uncheckedColor="#50515B"
-            checkedColor="#6D363F"
-            checked={val}
-            onPress={() => onCheckUncheck(i, l.name)}
-          />
-          {OnlineIcon(l.lastUpdate)}
-        </View>
-      );
-    });
-    return inputs;
-  }, [checked, targetCoords, theme]);
+  const targetInputs = targetCoords.map((l: any, i: number) => {
+    const val: boolean = checked[i];
+    const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
+    return (
+      <View key={i + "v"} style={style.CheckBoxWrapper}>
+        <CheckBox
+          title={l.name}
+          containerStyle={cbTheme}
+          key={i}
+          checkedIcon="dot-circle-o"
+          uncheckedColor="#50515B"
+          checkedColor="#6D363F"
+          checked={val}
+          onPress={() => onCheckUncheck(i, l.name)}
+        />
+        {OnlineIcon(l.lastUpdate)}
+      </View>
+    );
+  });
 
   // Create new targets
-  const newTargets = React.useMemo(() => {
-    const inputs = newTargetList.map((name: string, i: number) => (
-      <View key={i + "v"} style={style.newTargetWrapper}>
-        <Button
-          key={i}
-          appearance="ghost"
-          status="basic"
-          accessoryLeft={MinusIcon}
-          onPress={() => onRemoveNewTarget(name)}
-        >
-          {name}
-        </Button>
-      </View>
-    ));
-    return inputs;
-  }, [newTargetList]);
+  const newTargets = newTargetList.map((name: string, i: number) => (
+    <View key={i + "v"} style={style.newTargetWrapper}>
+      <Button
+        key={i}
+        appearance="ghost"
+        status="basic"
+        accessoryLeft={MinusIcon}
+        onPress={() => onRemoveNewTarget(name)}
+      >
+        {name}
+      </Button>
+    </View>
+  ));
 
   // Populate checked items with default values
   useEffect(() => {

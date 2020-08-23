@@ -12,8 +12,6 @@ import {
 } from "@ui-kitten/components";
 import { Icon, TopNavigationAction } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
-import { useSelector } from "react-redux";
-import { trackerIDSelector } from "../tracker/store/reducer";
 import TargetScreen from "./target";
 import MapScreen from "./map";
 import { ThemeContext } from "../../context/ThemeContextProvider";
