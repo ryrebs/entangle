@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { useSelector } from "react-redux";
 import { StyleSheet, ScrollView, Dimensions, View } from "react-native";
 import {
@@ -10,11 +10,12 @@ import {
   Card,
   Input,
 } from "@ui-kitten/components";
-import { targetsCoordsSelector, trackerIDSelector } from "./store/reducer";
+import { targetsCoordsSelector } from "./store/reducer";
 import { CheckBox } from "react-native-elements";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as eva from "@eva-design/eva";
 import { isTimeGreaterThan5min } from "../../utils/date.util";
+import { AuthContext } from "../../context/AuthContextProvider";
 
 // TODO:
 // Render issue
@@ -100,7 +101,7 @@ const AddModal: any = React.memo(
     setNewTarget,
     newTargetList,
   }) => {
-    const id = useSelector(trackerIDSelector);
+    const { id } = useContext(AuthContext);
     const [value, setValue] = React.useState("");
     const [error, setError] = React.useState("");
     const add = React.useCallback(() => {
