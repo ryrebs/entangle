@@ -119,9 +119,15 @@ func AuthenticateHandler(c echo.Context) (err error) {
 			return c.JSON(http.StatusBadRequest, invalidRequest)
 		}
 		return c.JSON(http.StatusCreated, &Response{
-			Message: "Token",
+			Message: "Created",
 			Status:  http.StatusCreated,
-			Data:    reqToken,
+			Data: struct {
+				Token string `json:"token"`
+				ID    string `json:"id"`
+			}{
+				Token: reqToken,
+				ID:    string(tracker),
+			},
 		})
 	}
 	return c.JSON(http.StatusBadRequest, invalidRequest)
