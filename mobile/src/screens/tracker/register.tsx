@@ -84,19 +84,20 @@ export default () => {
       <Layout
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
       >
-        {loading ? (
+        {/* {loading ? (
           <Spinner status="info" />
-        ) : (
-          <Button
-            size="small"
-            status="basic"
-            appearance="outline"
-            onPress={regDummy}
-          >
-            Create Tracker ID
-          </Button>
-        )}
+        ) : ( */}
+            <Button
+              size="small"
+              status="basic"
+              appearance="outline"
+              onPress={onRegisterLogin}
+            >
+              Create Tracker ID
+            </Button>
+          {/* )} */}
         <Divider />
+        {/* TODO: Show error, dispatch error on saga, reset register state */}
       </Layout>
     </SafeAreaView>
   );
@@ -132,6 +133,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   }
   if (data) {
     const { locations }: any = data;
+    // TODO: remove 
     console.log(locations);
     if (locations !== null && locations.length > 0)
       store.dispatch(updateCoordsReducerAction({ location: locations[0] }));

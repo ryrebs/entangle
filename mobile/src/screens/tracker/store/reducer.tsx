@@ -126,14 +126,17 @@ const trackerSlice = createSlice({
       const stateKeyToken = "tracker/token";
       if (action.payload.response !== null) {
         const { data, message } = action.payload.response;
-        const { token, id } = data;
-        state[stateKeyToken].token = token;
-        state[stateKeyToken].id = id;
+        if (data !== null) {
+          const { token, id } = data;
+          state[stateKeyToken].token = token;
+          state[stateKeyToken].id = id;
+        }
         state[stateKeyToken].errorMsg = message;
+      } else {
+        state[stateKeyToken].error = action.payload.error;
+        state[stateKeyToken].errorMsg = action.payload.errorMsg;
       }
       state[stateKeyToken].loading = action.payload.loading;
-      state[stateKeyToken].error = action.payload.error;
-      state[stateKeyToken].errorMsg = action.payload.errorMsg;
     },
     getTargetsReducerAction: (state, action) => {
       const stateKey = "tracker/getTargets";

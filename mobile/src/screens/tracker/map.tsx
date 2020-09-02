@@ -69,19 +69,19 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   }, [selfLocationOn, map, coords]);
 };
 
-// Effect for fetching coords
+// TODO:  Effect for fetching coords
 const useFetchTargetCoords = () => {
   React.useEffect(() => {
     let i = 0;
     setInterval(() => {
-      console.log(i++);
+      console.log("Fetch coords", i++);
     }, 3000);
   }, []);
 };
 
 const isLocationEnabled = async () => {
   return (
-    (await Location.hasServicesEnabledAsync()) ||
+    (await Location.hasServicesEnabledAsync()) &&
     (await getPermissionForLocationAync())
   );
 };
@@ -102,17 +102,15 @@ export default () => {
   useFetchTargetCoords();
 
   // Callbacks
-  const onLocationIconPress = React.useCallback(() => {
-    const isLocEnabled = (async () => await isLocationEnabled())();
+  const onLocationIconPress = React.useCallback(async () => {
+    const isLocEnabled = await isLocationEnabled();
     if (!isLocEnabled) {
       setPermissionModal(true);
     } else setSelfLocation(!selfLocationOn);
   }, [setSelfLocation, selfLocationOn, setPermissionModal]);
 
   const locationIconComp = React.useCallback(() => {
-    const isLocEnabled = (async () => await isLocationEnabled())();
-    const isColorActive = selfLocationOn && isLocEnabled;
-    return locationIcon(isColorActive);
+    return locationIcon(selfLocationOn);
   }, [selfLocationOn]);
 
   const targetIconComp = React.useCallback(() => {
@@ -160,7 +158,7 @@ export default () => {
         </UtilModal>
       </View>
       <MapView ref={mapRef} style={styles.mapStyle} customMapStyle={mapStyles}>
-        {selfLocationOn && coords != null ? (
+        {selfLocationOn ? (
           <Marker coordinate={coords} />
         ) : null}
         {targetCoords.map((l: any, i: number) => (
