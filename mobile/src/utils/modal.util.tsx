@@ -5,12 +5,8 @@ import { Layout, Text, Button, Icon, Modal, Card } from "@ui-kitten/components";
 const style = StyleSheet.create({
   cardContainer: {
     width: 220,
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   cardHeaderText: {
-    alignSelf: "flex-start",
     margin: 10,
   },
   cardClose: {
@@ -26,22 +22,20 @@ const style = StyleSheet.create({
 
 export default React.memo(
   ({ isVisible, setIsVisible, headerText, children }) => {
+    const closeModal = React.useCallback(() => {
+      setIsVisible(false);
+    }, [setIsVisible]);
+
     return (
-      <Modal visible={isVisible} onBackdropPress={setIsVisible}>
+      <Modal visible={isVisible} onBackdropPress={closeModal}>
         <Card
+          style={{ width: 220 }}
           header={() => (
             <View style={style.cardContainer}>
               <Layout level="1" style={style.cardHeaderText}>
-                <Text>{headerText}</Text>
-              </Layout>
-              <Layout level="2">
-                <Button
-                  onPress={() => setIsVisible(false)}
-                  appearance="ghost"
-                  accessoryLeft={() => (
-                    <Icon style={style.cardClose} name="close" />
-                  )}
-                />
+                <Text style={{ fontSize: 14, alignSelf: "center" }}>
+                  {headerText}
+                </Text>
               </Layout>
             </View>
           )}

@@ -30,12 +30,13 @@ const targetsCoordsSelector = createSelector(
 const registrationSelector = createSelector(
   (state: targetState) => state.tracker,
   (tracker) => {
-    const { loading, token, error, id } = tracker["tracker/token"];
+    const { loading, token, error, id, errorMsg } = tracker["tracker/token"];
     return {
       loading,
       token,
       error,
       id,
+      errorMsg,
     };
   }
 );
@@ -132,10 +133,9 @@ const trackerSlice = createSlice({
           state[stateKeyToken].id = id;
         }
         state[stateKeyToken].errorMsg = message;
-      } else {
-        state[stateKeyToken].error = action.payload.error;
-        state[stateKeyToken].errorMsg = action.payload.errorMsg;
-      }
+      } else state[stateKeyToken].errorMsg = action.payload.errorMsg;
+
+      state[stateKeyToken].error = action.payload.error;
       state[stateKeyToken].loading = action.payload.loading;
     },
     getTargetsReducerAction: (state, action) => {

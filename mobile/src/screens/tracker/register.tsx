@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Layout, Button } from "@ui-kitten/components";
 import { AuthContext } from "../../context/AuthContextProvider";
-import { Divider, TopNavigation, Spinner } from "@ui-kitten/components";
+import { Divider, TopNavigation, Spinner, Text } from "@ui-kitten/components";
 import { renderRightActions } from "./main";
 import { requestRegisterAction } from "./store/requests";
 import { useSelector, useDispatch } from "react-redux";
@@ -20,29 +20,29 @@ export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
 export default () => {
   const { authDispatchLogin } = React.useContext(AuthContext);
-  const { loading, error, token, id } = useSelector(registrationSelector);
+  const { loading, error, token, id, errorMsg } = useSelector(
+    registrationSelector
+  );
+  const [localError, setLocalError] = useState("");
   const dispatch = useDispatch();
 
   const onRegisterLogin = React.useCallback(async () => {
     let enabled = await Location.hasServicesEnabledAsync();
     if (enabled && (await getPermissionForLocationAync())) {
-      // Start background location task updates
-      await initBackgroundLocationTaskAync();
-
       // Immediately get the current position
       // don't wait for the background location task to start
       let location: any = await Location.getCurrentPositionAsync({});
       if (location !== null) {
         const { coords } = location;
         const token = tokenCreate(coords.latitude, coords.longitude);
-        if (token !== null) dispatch(requestRegisterAction(token));
-        // TODO: Replace with modal
-        else console.log("Please Try Again!");
+        if (token !== null) {
+          dispatch(requestRegisterAction(token));
+          // Start background location task updates
+          await initBackgroundLocationTaskAync();
+        } else setLocalError("Something went wrong!");
       }
-    } else {
-      // TODO: Replace with modal
-      console.log("Location needs to be turned on and permission enabled.");
-    }
+    } else
+      setLocalError("Turn on Location and enable Permission");
   }, [dispatch, tokenCreate, requestRegisterAction]);
 
   // TODO: remove, Simulate registration for dev
@@ -84,18 +84,28 @@ export default () => {
       <Layout
         style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
       >
-        {/* {loading ? (
+        {loading ? (
           <Spinner status="info" />
-        ) : ( */}
-            <Button
-              size="small"
-              status="basic"
-              appearance="outline"
-              onPress={onRegisterLogin}
-            >
-              Create Tracker ID
-            </Button>
-          {/* )} */}
+        ) : (
+          <Button
+            size="small"
+            status="basic"
+            appearance="outline"
+            onPress={onRegisterLogin}
+          >
+            Create Tracker ID
+          </Button>
+        )}
+        {error ? (
+          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+            {errorMsg}. Please try again.
+          </Text>
+        ) : null}
+        {localError !== "" ? (
+          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+            {localError}. Please try again.
+          </Text>
+        ) : null}
         <Divider />
         {/* TODO: Show error, dispatch error on saga, reset register state */}
       </Layout>
@@ -133,7 +143,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   }
   if (data) {
     const { locations }: any = data;
-    // TODO: remove 
+    // TODO: remove
     console.log(locations);
     if (locations !== null && locations.length > 0)
       store.dispatch(updateCoordsReducerAction({ location: locations[0] }));

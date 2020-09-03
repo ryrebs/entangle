@@ -150,11 +150,11 @@ export default () => {
         />
         <UtilModal
           isVisible={permissionModal}
-          headerText="Permission Error"
+          headerText="Error: Do the following steps:"
           setIsVisible={setPermissionModal}
         >
-          <Text style={{ marginBottom: 5 }}>Enable location.</Text>
-          <Text>Allow location permission.</Text>
+          <Text style={{ marginBottom: 5, fontSize: 13 }}>1. Turn on Location.</Text>
+          <Text style={{ fontSize: 13 }}>2. Allow location permission.</Text>
         </UtilModal>
       </View>
       <MapView ref={mapRef} style={styles.mapStyle} customMapStyle={mapStyles}>
