@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 	"tracking/backend/db"
 	"tracking/backend/util"
@@ -112,7 +111,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	if ok != true {
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-	tracker := createUser(claims.Lat, claims.Lng)
+	tracker := createUser(claims.Lat, claims.Lng, user.Name)
 	if len(tracker) > 0 {
 		reqToken, cErr := CreateToken(createStandardClaims(string(tracker)))
 		if cErr != nil {
@@ -133,16 +132,18 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	return c.JSON(http.StatusBadRequest, invalidRequest)
 }
 
-func createUser(lat, lng float64) []byte {
+func createUser(lat, lng float64, name string) []byte {
 	user, _ := bson.Marshal(struct {
 		Lat        float64
 		Lng        float64
-		LastUpdate int64 `bson:"lastUpdate"`
+		Name string
+		LastUpdate int64
 		Status     string
 		Trackers   []string
 	}{
 		Lat:        lat,
 		Lng:        lng,
+		Name: name,
 		LastUpdate: util.DateToday(),
 		Status:     "Active",
 		Trackers:   []string{},
@@ -201,23 +202,22 @@ func (c *claims) validateClaim() (err error) {
 }
 
 // ValidateAPIRequest - check valid token and an existing tracker
-func ValidateAPIRequest(next echo.HandlerFunc) echo.HandlerFunc {
+func ValidateAPIRequest() echo.MiddlewareFunc { 
+return func (next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		p := c.Path()
 		response := Response{
 			Message: "Token Invalid or Expired",
 			Status:  http.StatusBadRequest,
 			Data:    nil,
 		}
-		if strings.Contains(p, "mobile") {
-			token := c.Request().Header.Get(echo.HeaderAuthorization)
-			clm, ok := validateServerToken(token)
-			if !ok {
-				return c.JSON(http.StatusBadRequest, response)
-			}
-			c.Set(TrackerID, string(clm.Subject))
+		token := c.Request().Header.Get(echo.HeaderAuthorization)
+		clm, ok := validateServerToken(token)
+		if !ok {
+			return c.JSON(http.StatusBadRequest, response)
 		}
+		c.Set(TrackerID, string(clm.Subject))
 		return next(c)
+		}
 	}
 }
 
@@ -245,7 +245,7 @@ func validateServerToken(token string) (*jwt.StandardClaims, bool) {
 	return nil, false
 }
 
-func setTrackerExpiredStatus(id string) error {
+func setTrackerExpiredStatus(id string)  {
 	util.LogInDev("TRACKER", id)
 	changes := struct{ Status string }{Status: "Expired"}
 	filter := db.CreateObjectID(id)
@@ -256,10 +256,8 @@ func setTrackerExpiredStatus(id string) error {
 	}
 	_, err := db.FindOneAndUpdate(setChanges, filter, LocationCollection)
 	if err != nil {
-		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
-		return err
-	}
-	return nil
+		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())	
+	} 
 }
 
 func setTrackerActiveStatus(id string) error {
