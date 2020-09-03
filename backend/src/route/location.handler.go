@@ -30,7 +30,7 @@ var errorResponse = Response{
 func LocationHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	result := []target{}
-	if trackerID != nil || trackerID != "" {
+	if trackerID != nil {
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		opts := options.Find()
 		cursor, err := LocationCollection.Find(context.TODO(), bson.M{"trackers": tID}, opts)
@@ -78,8 +78,7 @@ func AddTargetHandler(c echo.Context) (err error) {
 		util.LogInDev("ERR:updateTrackerLocationHandler", msg)
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-
-	if trackerID != nil || trackerID != "" {
+	if trackerID != nil {
 		for _, t := range user.Targets {
 			changes := struct{ Trackers string }{Trackers: strings.ReplaceAll(trackerID.(string), "\"", "")}
 			filter := db.CreateObjectID(t)
@@ -96,8 +95,8 @@ func AddTargetHandler(c echo.Context) (err error) {
 				result = append(result, target{
 					ID:         strings.ReplaceAll(string(objectIDStr), "\"", ""),
 					LastUpdate: doc["lastUpdate"].(int64),
-					Lat:        doc["latitude"].(float64),
-					Lng:        doc["longitude"].(float64),
+					Lat:        doc["lat"].(float64),
+					Lng:        doc["lng"].(float64),
 				})
 			}
 		}
@@ -126,7 +125,7 @@ func UpdateTrackerLocationHandler(c echo.Context) (err error) {
 		util.LogInDev("ERR:updateTrackerLocationHandler", msg)
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-	if trackerID != nil || trackerID != "" {
+	if trackerID != nil {
 		user.LastUpdate = util.DateToday()
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		filter := db.CreateObjectID(tID)
@@ -151,7 +150,7 @@ func UpdateTrackerLocationHandler(c echo.Context) (err error) {
 // TrackerDeleteHandler - deletes the requesting tracker and deletes entry of trackerID on all docs
 func TrackerDeleteHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
-	if trackerID != "" || trackerID != nil {
+	if trackerID != nil {
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		filter := db.CreateObjectID(tID)
 		opts := options.Delete().SetCollation(&options.Collation{
@@ -201,7 +200,7 @@ func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 		util.LogInDev("ERR:updateTrackerLocationHandler", msg)
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-	if trackerID != nil || trackerID != "" {
+	if trackerID != nil {
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
 		filter := db.CreateObjectID(tID)
 		changes := struct {
