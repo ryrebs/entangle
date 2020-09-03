@@ -26,9 +26,8 @@ func main() {
 	e.Use(middleware.CORS())
 
 	// Secure requests activity on location routes
-	locationGroup := e.Group("/location")
-	locationGroup.Use(route.ValidateAPIRequest)
-
+	locationGroup := e.Group("/location", route.ValidateAPIRequest())
+	
 	// Init a db
 	db.InitDBClient()
 
@@ -38,7 +37,7 @@ func main() {
 	}
 
 	// Register all routes
-	route.Register(e)
+	route.Register(e, locationGroup)
 
 	// Start the server
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
