@@ -1,9 +1,8 @@
 import { call, all, spawn } from "redux-saga/effects";
 import requestSaga from "./request/request.saga";
-import authSaga from "./auth/auth.saga";
 
 export default function* rootSaga() {
-  const sagas = [requestSaga, authSaga];
+  const sagas = [requestSaga];
   yield all(
     sagas.map((saga) =>
       // eslint-disable-next-line func-names

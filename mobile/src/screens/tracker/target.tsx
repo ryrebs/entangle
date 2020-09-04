@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { StyleSheet, ScrollView, Dimensions, View } from "react-native";
 import {
@@ -15,7 +15,7 @@ import { CheckBox } from "react-native-elements";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as eva from "@eva-design/eva";
 import { isTimeGreaterThan5min } from "../../utils/date.util";
-import { AuthContext } from "../../context/AuthContextProvider";
+import { authSelector } from "../../store/auth/auth.reducer";
 
 // TODO:
 // Render issue
@@ -100,7 +100,7 @@ const AddModal: any = ({
   setNewTarget,
   newTargetList,
 }) => {
-  const { id } = useContext(AuthContext);
+  const { id } = useSelector(authSelector);
   const [value, setValue] = React.useState("");
   const [error, setError] = React.useState("");
   const add = React.useCallback(() => {

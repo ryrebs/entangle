@@ -6,13 +6,14 @@ import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import MainScreen from "./tracker/main";
 import RegisterScreen from "./tracker/register";
-import { AuthContext } from "../context/AuthContextProvider";
 import { ThemeContext } from "../context/ThemeContextProvider";
+import { useSelector } from "react-redux";
+import { authSelector } from "../store/auth/auth.reducer";
 
 const Stack = createStackNavigator();
 
 function App() {
-  const { isAuthenticated } = React.useContext(AuthContext);
+  const { authenticated } = useSelector(authSelector);
   const { theme } = React.useContext(ThemeContext);
   return (
     <>
@@ -20,7 +21,7 @@ function App() {
       <ApplicationProvider {...eva} theme={theme}>
         <NavigationContainer>
           <Stack.Navigator headerMode="none">
-            {isAuthenticated ? (
+            {authenticated ? (
               <Stack.Screen name="MainScreen" component={MainScreen} />
             ) : (
               <Stack.Screen name="RegisterScreen" component={RegisterScreen} />

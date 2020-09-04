@@ -23,14 +23,13 @@ export const createAxiosInstance = (url: string) => {
   return axiosApi;
 };
 
-const setBearerToken = (apiInst: AxiosInstance) => {
+export const setBearerToken = (token: string) => {
   // eslint-disable-next-line no-param-reassign
-  apiInst.defaults.headers.common.Authorization = "<set bearer here..>";
+  api.getApi().defaults.headers.common.Authorization = token;
 };
 
 export default () => {
   api.initialize(createAxiosInstance(API_HOST));
-  setBearerToken(api.getApi());
 };
 
 export { api as ApiService };

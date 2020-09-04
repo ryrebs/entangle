@@ -16,6 +16,7 @@ import TargetModal from "./target.modal";
 import UtilModal from "../../utils/modal.util";
 import { styles, mapStyle } from "./style";
 import { ThemeContext } from "../../context/ThemeContextProvider";
+import { authSelector } from "../../store/auth/auth.reducer";
 
 const locationIcon = (selfLocationOn: Boolean) => {
   const isLocationIconACtiveColor = selfLocationOn ? "#22C10F" : "#F5F5F5";
@@ -69,15 +70,9 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   }, [selfLocationOn, map, coords]);
 };
 
-// TODO:  Effect for fetching coords
-const useFetchTargetCoords = () => {
-  React.useEffect(() => {
-    let i = 0;
-    setInterval(() => {
-      console.log("Fetch coords", i++);
-    }, 3000);
-  }, []);
-};
+// TODO:  Effect for fetching coords transfer on saga
+const useFetchTargetCoords = () => {}
+  
 
 const isLocationEnabled = async () => {
   return (
@@ -95,11 +90,10 @@ export default () => {
   const [selfLocationOn, setSelfLocation] = React.useState(false);
   const [isTargetModalVisible, setIsTargetModalVisible] = React.useState(false);
   const [permissionModal, setPermissionModal] = React.useState(false);
-
+  const [mapReady, setMapReady] = React.useState(false);
+  const { name } = useSelector(authSelector);
   // Effects
   useZoomInToCoords(mapRef, coords, selfLocationOn);
-
-  useFetchTargetCoords();
 
   // Callbacks
   const onLocationIconPress = React.useCallback(async () => {
@@ -125,9 +119,20 @@ export default () => {
     setIsTargetModalVisible(false);
   }, [setIsTargetModalVisible]);
 
+  const onLayout = React.useCallback(() => {
+    setMapReady(true);
+  }, [setMapReady]);
+
   const mapStyles = theme === eva.dark ? mapStyle : [];
+
   return (
-    <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <Layout
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <View style={styles.locationBtnWrapper}>
         <Button
           appearance="ghost"
@@ -153,17 +158,27 @@ export default () => {
           headerText="Error: Do the following steps:"
           setIsVisible={setPermissionModal}
         >
-          <Text style={{ marginBottom: 5, fontSize: 13 }}>1. Turn on Location.</Text>
+          <Text style={{ marginBottom: 5, fontSize: 13 }}>
+            1. Turn on Location.
+          </Text>
           <Text style={{ fontSize: 13 }}>2. Allow location permission.</Text>
         </UtilModal>
       </View>
-      <MapView ref={mapRef} style={styles.mapStyle} customMapStyle={mapStyles}>
+
+      <MapView
+        onLayout={onLayout}
+        ref={mapRef}
+        style={styles.mapStyle}
+        customMapStyle={mapStyles}
+      >
         {selfLocationOn ? (
-          <Marker coordinate={coords} />
+          <Marker coordinate={coords} title={"(You)" + name} />
         ) : null}
-        {targetCoords.map((l: any, i: number) => (
-          <Marker key={i} coordinate={l} title={l.name} />
-        ))}
+        {mapReady
+          ? targetCoords.map((l: any, i: number) => (
+              <Marker key={i} coordinate={l} title={l.name} />
+            ))
+          : null}
       </MapView>
     </Layout>
   );

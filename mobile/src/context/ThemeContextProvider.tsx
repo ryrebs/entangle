@@ -15,7 +15,7 @@ export default (props: ThemeProps) => {
   const [theme, setTheme] = React.useState(eva.dark);
 
   const setEvaTheme = React.useCallback(() => {
-    setTheme((t) => {
+    setTheme((t: string) => {
       const newTheme = t === eva.dark ? eva.light : eva.dark;
       return newTheme;
     });
