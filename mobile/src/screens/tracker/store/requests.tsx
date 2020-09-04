@@ -1,12 +1,10 @@
 import { ApiService } from "../../../service/api";
-import { registerReducerAction } from "./reducer";
+import { logoutAuthReducerAction } from "../../../store/auth/auth.reducer";
 
-export const requestRegisterAction = (token: string) => ({
+export const logoutRequestAction = () => ({
   type: "REQUEST",
-  method: ApiService.getApi().post,
-  route: "/auth",
-  resultReducerAction: registerReducerAction,
-  payload: {
-    token,
-  },
-});
+  method: ApiService.getApi().delete,
+  route: "/location/deletetracker",
+  resultReducerAction: logoutAuthReducerAction,
+  payload: {},
+})

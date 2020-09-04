@@ -18,7 +18,9 @@ import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as Location from "expo-location";
 import { LOCATION_TASK_NAME } from "./register";
 import * as TaskManager from "expo-task-manager";
-import { AuthContext } from "../../context/AuthContextProvider";
+import { useSelector, useDispatch } from "react-redux";
+import { authSelector } from "../../store/auth/auth.reducer";
+import { logoutRequestAction } from "./store/requests";
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -47,7 +49,11 @@ const LogoutIcon = (props) => {
 };
 
 const LogoutModal = ({ isModalVisible, toggleModal }) => {
+  const dispatch = useDispatch()
+
   const selfDestruct = React.useCallback(async () => {
+    dispatch(logoutRequestAction())
+    // TODO: Remove data from server
     // Remove location background task
     if (await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME))
       await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
@@ -98,7 +104,7 @@ export const renderLeftActions = () => {
 };
 
 export default () => {
-  const { id } = React.useContext(AuthContext);
+  const { id } = useSelector(authSelector);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

@@ -123,9 +123,11 @@ func AuthenticateHandler(c echo.Context) (err error) {
 			Data: struct {
 				Token string `json:"token"`
 				ID    string `json:"id"`
+				Name string `json:"name"`
 			}{
 				Token: reqToken,
 				ID:    string(tracker),
+				Name: user.Name,
 			},
 		})
 	}

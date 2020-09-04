@@ -90,6 +90,9 @@ function* requestFlow() {
   while (true) {
     const requestAction = yield take('REQUEST');
     const { resultReducerAction } = requestAction;
+
+    // First reducer mutation
+    // Note: Response is null
     yield put(
       resultReducerAction({
         loading: true,

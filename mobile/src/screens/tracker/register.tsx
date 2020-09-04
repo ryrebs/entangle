@@ -1,76 +1,77 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Layout, Button } from "@ui-kitten/components";
-import { AuthContext } from "../../context/AuthContextProvider";
-import { Divider, TopNavigation, Spinner, Text } from "@ui-kitten/components";
+import {
+  Divider,
+  TopNavigation,
+  Spinner,
+  Text,
+  Input,
+} from "@ui-kitten/components";
 import { renderRightActions } from "./main";
-import { requestRegisterAction } from "./store/requests";
+import { requestRegisterAction } from "../../store/auth/auth.request";
 import { useSelector, useDispatch } from "react-redux";
-import { registrationSelector } from "./store/reducer";
 import * as Location from "expo-location";
 import tokenCreate from "../../utils/token.util";
 import * as TaskManager from "expo-task-manager";
 import { updateCoordsReducerAction } from "./store/reducer";
 import { logInterceptedForDev } from "../../utils/data.util";
 import { store } from "../../index";
-
+import { useWindowDimensions } from "react-native";
+import { authSelector } from "../../store/auth/auth.reducer";
 const TIME_INTERVAL = 5000; // Receive location updates every 5 seconds
 const DISTANCE_INTERVAL = 0; // Receive update with distance 0 meters
 export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
+const isNameValid = (name: string) => {
+  return /^[a-zA-Z]\w{5,15}$/.test(name);
+};
+
+const isLocationAndLocationPermissionEnabled = async () => {
+  const a = await Location.hasServicesEnabledAsync();
+  const b = await getPermissionForLocationAync();
+  return a && b;
+};
+
 export default () => {
-  const { authDispatchLogin } = React.useContext(AuthContext);
-  const { loading, error, token, id, errorMsg } = useSelector(
-    registrationSelector
-  );
+  const { loading, error, token, id, errorMsg } = useSelector(authSelector);
   const [localError, setLocalError] = useState("");
+  const [name, setName] = useState("");
+  const [nameError, setNameErrorMsg] = useState("");
   const dispatch = useDispatch();
 
   const onRegisterLogin = React.useCallback(async () => {
-    let enabled = await Location.hasServicesEnabledAsync();
-    if (enabled && (await getPermissionForLocationAync())) {
-      // Immediately get the current position
-      // don't wait for the background location task to start
-      let location: any = await Location.getCurrentPositionAsync({});
-      if (location !== null) {
-        const { coords } = location;
-        const token = tokenCreate(coords.latitude, coords.longitude);
-        if (token !== null) {
-          dispatch(requestRegisterAction(token));
-          // Start background location task updates
-          await initBackgroundLocationTaskAync();
-        } else setLocalError("Something went wrong!");
-      }
-    } else
-      setLocalError("Turn on Location and enable Permission");
-  }, [dispatch, tokenCreate, requestRegisterAction]);
-
-  // TODO: remove, Simulate registration for dev
-  const regDummy = async () => {
-    await getPermissionForLocationAync();
-    let location: any = await Location.getCurrentPositionAsync({});
-    store.dispatch(updateCoordsReducerAction({ location }));
-    authDispatchLogin({
-      isAuthenticated: true,
-      fetching: false,
-      token: "asdasd",
-      id: "123123",
-      error: null,
-    });
-  };
-
-  // Api registration effect
-  React.useEffect(() => {
-    if (!error && !loading && token !== null && id !== null) {
-      authDispatchLogin({
-        isAuthenticated: true,
-        fetching: false,
-        token,
-        id,
-        error: null,
-      });
+    setLocalError("");
+    if (isNameValid(name)) {
+      let enabled = await isLocationAndLocationPermissionEnabled();
+      if (enabled) {
+        // Immediately get the current position
+        // don't wait for the background location task to start
+        let location: any = await Location.getCurrentPositionAsync({});
+        if (location !== null) {
+          const { coords } = location;
+          const token = tokenCreate(coords.latitude, coords.longitude);
+          if (token !== null) {
+            dispatch(requestRegisterAction(token, name));
+            // Start background location task updates
+            await initBackgroundLocationTaskAync();
+          } else setLocalError("Something went wrong!");
+        }
+      } else setLocalError("Turn on Location and enable Permission");
+    } else {
+      setNameErrorMsg("Invalid Name or Alias");
     }
-  }, [error, loading, token, id]);
+  }, [dispatch, tokenCreate, requestRegisterAction, name]);
+
+  const onChangeText = React.useCallback(
+    (val: string) => {
+      setName(val);
+      setNameErrorMsg("");
+    },
+    [setName, setNameErrorMsg]
+  );
+
+  const inputWidth = useWindowDimensions().width * 0.8;
 
   // TODO: Add loading effect
   return (
@@ -82,8 +83,21 @@ export default () => {
       />
       <Divider />
       <Layout
-        style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingBottom: 100,
+        }}
       >
+        <Input
+          label="Name / Alias"
+          style={{ width: inputWidth, marginBottom: 15 }}
+          status="basic"
+          placeholder="e.g. klue02 or klue_02"
+          value={name}
+          onChangeText={onChangeText}
+        />
         {loading ? (
           <Spinner status="info" />
         ) : (
@@ -92,10 +106,16 @@ export default () => {
             status="basic"
             appearance="outline"
             onPress={onRegisterLogin}
+            style={{ width: inputWidth }}
           >
-            Create Tracker ID
+            Register
           </Button>
         )}
+        {nameError != "" ? (
+          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+            {nameError}. Please try again.
+          </Text>
+        ) : null}
         {error ? (
           <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
             {errorMsg}. Please try again.
