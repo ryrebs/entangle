@@ -16,15 +16,17 @@ import tokenCreate from "../../utils/token.util";
 import * as TaskManager from "expo-task-manager";
 import { updateCoordsReducerAction } from "./store/reducer";
 import { logInterceptedForDev } from "../../utils/data.util";
-import { store } from "../../index";
+import { store } from "../../store";
 import { useWindowDimensions } from "react-native";
 import { authSelector } from "../../store/auth/auth.reducer";
-const TIME_INTERVAL = 5000; // Receive location updates every 5 seconds
-const DISTANCE_INTERVAL = 0; // Receive update with distance 0 meters
+import { updateTrackerCoordsAction } from "./store/saga";
+
+const TIME_INTERVAL = 5000; //15000; // Receive location updates every 5 seconds
+const DISTANCE_INTERVAL = 0; //40; // Receive update with distance 30 meters
 export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
 const isNameValid = (name: string) => {
-  return /^[a-zA-Z]\w{5,15}$/.test(name);
+  return /^[a-zA-Z]\w{4,15}$/.test(name);
 };
 
 const isLocationAndLocationPermissionEnabled = async () => {
@@ -52,6 +54,7 @@ export default () => {
           const { coords } = location;
           const token = tokenCreate(coords.latitude, coords.longitude);
           if (token !== null) {
+            // TODO: remove after testing
             dispatch(requestRegisterAction(token, name));
             // Start background location task updates
             await initBackgroundLocationTaskAync();
@@ -73,7 +76,6 @@ export default () => {
 
   const inputWidth = useWindowDimensions().width * 0.8;
 
-  // TODO: Add loading effect
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopNavigation
@@ -163,9 +165,9 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   }
   if (data) {
     const { locations }: any = data;
-    // TODO: remove
-    console.log(locations);
-    if (locations !== null && locations.length > 0)
+    if (locations !== null && locations.length > 0) {
       store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
+      store.dispatch(updateTrackerCoordsAction({ location: locations[0] }));
+    }
   }
 });

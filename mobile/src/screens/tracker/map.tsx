@@ -4,7 +4,7 @@ import { Button, Icon, Text } from "@ui-kitten/components";
 import { Layout } from "@ui-kitten/components";
 import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import * as eva from "@eva-design/eva";
 import * as Location from "expo-location";
 import { getPermissionForLocationAync } from "./register";
@@ -17,6 +17,7 @@ import UtilModal from "../../utils/modal.util";
 import { styles, mapStyle } from "./style";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import { authSelector } from "../../store/auth/auth.reducer";
+import { startUpdates } from "./store/saga";
 
 const locationIcon = (selfLocationOn: Boolean) => {
   const isLocationIconACtiveColor = selfLocationOn ? "#22C10F" : "#F5F5F5";
@@ -71,8 +72,7 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
 };
 
 // TODO:  Effect for fetching coords transfer on saga
-const useFetchTargetCoords = () => {}
-  
+const useFetchTargetCoords = () => {};
 
 const isLocationEnabled = async () => {
   return (
@@ -92,8 +92,13 @@ export default () => {
   const [permissionModal, setPermissionModal] = React.useState(false);
   const [mapReady, setMapReady] = React.useState(false);
   const { name } = useSelector(authSelector);
+  const dispatch = useDispatch();
+
   // Effects
   useZoomInToCoords(mapRef, coords, selfLocationOn);
+  React.useEffect(() => {
+    dispatch(startUpdates());
+  }, []);
 
   // Callbacks
   const onLocationIconPress = React.useCallback(async () => {

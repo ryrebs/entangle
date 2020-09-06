@@ -17,16 +17,20 @@ const persistConfig = {
 
 const persistedRootReducer = persistReducer(persistConfig, createRootReducer());
 
+let store: any;
+let persistor: any;
+
 export default () => {
   const sagaMiddleware = createSagaMiddleware();
   // eslint-disable-next-line no-undef
   const middlewares = [sagaMiddleware];
-  const store = createStore(
+  store = createStore(
     persistedRootReducer,
     // composeWithDevTools(applyMiddleware(...middlewares)),
     applyMiddleware(...middlewares)
   );
-  const persistor = persistStore(store);
+  persistor = persistStore(store);
   sagaMiddleware.run(rootSaga);
-  return { store, persistor };
 };
+
+export { store, persistor };

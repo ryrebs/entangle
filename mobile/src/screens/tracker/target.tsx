@@ -295,3 +295,6 @@ export default () => {
     </Layout>
   );
 };
+
+
+// TODO: Implement add and delete connection to api

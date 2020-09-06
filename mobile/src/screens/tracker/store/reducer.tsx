@@ -31,15 +31,7 @@ const initialState = {
   "tracker/getTargets": {
     loading: false,
     error: false,
-    response: [
-      {
-        latitude: 8.754795,
-        longitude: 105.228689,
-        _id: "123456",
-        name: "a1",
-        lastUpdate: "1592183700",
-      },
-    ],
+    response: [],
     errorMsg: "",
   },
   "tracker/coords": { location: null },
@@ -49,6 +41,9 @@ const trackerSlice = createSlice({
   name: "trackerSlice",
   initialState,
   reducers: {
+    getTargetsStartedReducerAction: (state) => {
+      state["tracker/getTargets"].loading = true;
+    },
     getTargetsReducerAction: (state, action) => {
       const stateKey = "tracker/getTargets";
       state[stateKey].loading = action.payload.loading;
@@ -57,11 +52,8 @@ const trackerSlice = createSlice({
       if (
         action.payload.response != null &&
         action.payload.response.hasOwnProperty("data")
-      ) {
+      )
         state[stateKey].response = action.payload.response.data;
-      } else {
-        state[stateKey].response = [];
-      }
     },
     updateCoordsReducerAction: (state, action) => {
       const stateKey = "tracker/coords";
@@ -72,9 +64,14 @@ const trackerSlice = createSlice({
 
 const { actions, reducer } = trackerSlice;
 
-const { getTargetsReducerAction, updateCoordsReducerAction } = actions;
+const {
+  getTargetsStartedReducerAction,
+  getTargetsReducerAction,
+  updateCoordsReducerAction,
+} = actions;
 
 export {
+  getTargetsStartedReducerAction,
   targetsCoordsSelector,
   trackerCoordsSelector,
   targetResponseSelector,

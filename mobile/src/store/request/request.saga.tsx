@@ -7,15 +7,15 @@ import {
   all,
   debounce,
   actionChannel,
-} from 'redux-saga/effects';
-import { channel, buffers } from 'redux-saga';
+} from "redux-saga/effects";
+import { channel, buffers } from "redux-saga";
 
 function* retry(count, msDelay, method, route, payload) {
   let error;
   for (let i = 0; i < count; i += 1) {
     try {
-      const apiResponse = yield call(method, route, payload);
-      return apiResponse;
+      const res = yield call(method, route, payload);
+      return res;
     } catch (err) {
       if (i < count - 1) {
         yield delay(msDelay);
@@ -36,9 +36,9 @@ export function* returnErrorResponseAction(err, action) {
       action({
         loading: false,
         error: true,
-        errorMsg: '',
+        errorMsg: "",
         response,
-      }),
+      })
     );
   } else {
     yield put(
@@ -46,8 +46,8 @@ export function* returnErrorResponseAction(err, action) {
         loading: false,
         response: null,
         error: true,
-        errorMsg: err.message || '',
-      }),
+        errorMsg: err.message || "",
+      })
     );
   }
 }
@@ -64,9 +64,9 @@ function* handler(action) {
       resultReducerAction({
         loading: false,
         error: false,
-        errorMsg: '',
+        errorMsg: "",
         response,
-      }),
+      })
     );
   } catch (err) {
     yield call(returnErrorResponseAction, err, resultReducerAction);
@@ -88,7 +88,7 @@ function* requestFlow() {
     yield fork(requestHandler, chan);
   }
   while (true) {
-    const requestAction = yield take('REQUEST');
+    const requestAction = yield take("REQUEST");
     const { resultReducerAction } = requestAction;
 
     // First reducer mutation
@@ -97,9 +97,9 @@ function* requestFlow() {
       resultReducerAction({
         loading: true,
         error: false,
-        errorMsg: '',
+        errorMsg: "",
         response: null,
-      }),
+      })
     );
     yield put(chan, requestAction);
   }
@@ -107,12 +107,12 @@ function* requestFlow() {
 
 /** Delay the search request to an api for 1 second */
 function* searchRequest() {
-  yield debounce(1000, 'SEARCH_REQUEST', handler);
+  yield debounce(1000, "SEARCH_REQUEST", handler);
 }
 
 /** Queue up to 5 request and handle each one of them in order */
 function* requestQueue() {
-  const requestChan = yield actionChannel('REQUEST_QUEUE', buffers.sliding(5));
+  const requestChan = yield actionChannel("REQUEST_QUEUE", buffers.sliding(5));
   while (true) {
     const requestAction = yield take(requestChan);
     const { startReducerAction } = requestAction;
@@ -122,7 +122,7 @@ function* requestQueue() {
 }
 
 function* root() {
-  yield all([fork(requestFlow), fork(searchRequest), fork(requestQueue)]);
+  yield all([call(requestFlow), call(searchRequest), call(requestQueue)]);
 }
 
 export default root;
