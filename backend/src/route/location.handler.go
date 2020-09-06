@@ -18,6 +18,7 @@ type target struct {
 	LastUpdate int64   `json:"lastUpdate"`
 	Lat        float64 `json:"latitude"`
 	Lng        float64 `json:"longitude"`
+	Name       string  `json:"name"`
 }
 
 var errorResponse = Response{
@@ -48,8 +49,9 @@ func LocationHandler(c echo.Context) (err error) {
 			result = append(result, target{
 				ID:         strings.ReplaceAll(string(objectIDStr), "\"", ""),
 				LastUpdate: res["lastUpdate"].(int64),
-				Lat:        res["latitude"].(float64),
-				Lng:        res["longitude"].(float64),
+				Lat:        res["lat"].(float64),
+				Lng:        res["lng"].(float64),
+				Name:       res["name"].(string),
 			})
 		}
 	}
@@ -97,6 +99,7 @@ func AddTargetHandler(c echo.Context) (err error) {
 					LastUpdate: doc["lastUpdate"].(int64),
 					Lat:        doc["lat"].(float64),
 					Lng:        doc["lng"].(float64),
+					Name:       doc["name"].(string),
 				})
 			}
 		}
