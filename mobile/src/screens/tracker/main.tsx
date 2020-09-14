@@ -1,4 +1,5 @@
 import React from "react";
+import { Alert, Clipboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Divider, TopNavigation } from "@ui-kitten/components";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -106,12 +107,27 @@ export const renderLeftActions = () => {
 
 export default () => {
   const { id } = useSelector(authSelector);
+  const copyToClipboard = React.useCallback(async () => {
+    await Clipboard.setString(id);
+    Alert.alert(
+      "",
+      "Copied to clipboard",
+      [{ text: "OK", onPress: () => {} }],
+      {
+        cancelable: false,
+      }
+    );
+  }, [id]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopNavigation
         title="Entangle"
-        subtitle={"ID: " + id} // TODO: id copy to clipboard
+        subtitle={() => (
+          <Text appearance="hint" category="c2" onPress={copyToClipboard}>
+            {"ID: " + id}
+          </Text>
+        )}
         alignment="center"
         accessoryRight={renderRightActions}
         accessoryLeft={renderLeftActions}
