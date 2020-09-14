@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 	"tracking/backend/db"
 	"tracking/backend/util"
@@ -111,7 +112,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 	if ok != true {
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
-	tracker := createUser(claims.Lat, claims.Lng, user.Name)
+	tracker := string(createUser(claims.Lat, claims.Lng, user.Name))
 	if len(tracker) > 0 {
 		reqToken, cErr := CreateToken(createStandardClaims(string(tracker)))
 		if cErr != nil {
@@ -126,7 +127,7 @@ func AuthenticateHandler(c echo.Context) (err error) {
 				Name  string `json:"name"`
 			}{
 				Token: reqToken,
-				ID:    string(tracker),
+				ID:    strings.ReplaceAll(tracker, "\"", ""),
 				Name:  user.Name,
 			},
 		})
