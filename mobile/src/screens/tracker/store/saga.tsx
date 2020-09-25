@@ -24,8 +24,8 @@ const STOP_FETCH_TARGETS = "CANCEL_FETCH_TARGETS";
 const UPDATE_TRACKER_COORDS = "UPDATE_TRACKER_COORDS";
 const STOP_UPDATE_TRACKER_COORDS = "STOP_UPDATE_TRACKER_COORDS";
 
-export const startUpdates = createAction(START_FETCH_TARGETS);
-export const stopUpdates = createAction(STOP_FETCH_TARGETS);
+export const startFetchTargetUpdates = createAction(START_FETCH_TARGETS);
+export const stopFetchTargetUpdates = createAction(STOP_FETCH_TARGETS);
 export const updateTrackerCoordsAction: (action: any) => any = createAction(
   UPDATE_TRACKER_COORDS
 );

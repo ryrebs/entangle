@@ -17,7 +17,7 @@ import UtilModal from "../../utils/modal.util";
 import { styles, mapStyle } from "./style";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import { authSelector } from "../../store/auth/auth.reducer";
-import { startUpdates } from "./store/saga";
+import { startFetchTargetUpdates } from "./store/saga";
 
 const locationIcon = (selfLocationOn: Boolean) => {
   const isLocationIconACtiveColor = selfLocationOn ? "#22C10F" : "#F5F5F5";
@@ -94,7 +94,7 @@ export default () => {
   // Effects
   useZoomInToCoords(mapRef, coords, selfLocationOn);
   React.useEffect(() => {
-    dispatch(startUpdates());
+    dispatch(startFetchTargetUpdates());
   }, []);
 
   // Callbacks
