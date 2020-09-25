@@ -16,6 +16,6 @@ Track anyone, anywhere!.
 
 ---
 
-### Setup
+### Setup [WIP]
 
 A. Run the backend on `/operations` with `docker-compose up`.

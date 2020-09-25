@@ -29,7 +29,11 @@ C. Run dev:
     SECRET_KEY=JK^gshdf34LophsdJkj%%34%%\$$ui \
     SECRET_CLIENT_KEY=aUi8sd%667HyaskjAjkd22SJKcjsk@#5123%^$ go run ./server.go
 
-D. Sample Requests
+D. Run docs server (wip)
+
+---
+
+Sample Requests
 
 Test token for registration contains lat, lng and signed by client secret key
 
