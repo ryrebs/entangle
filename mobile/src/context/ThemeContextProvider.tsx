@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { ReactChild } from "react";
 import * as eva from "@eva-design/eva";
 
 export const ThemeContext = React.createContext({
@@ -7,11 +7,10 @@ export const ThemeContext = React.createContext({
 });
 
 interface ThemeProps {
-  children: any;
+  children: ReactChild;
 }
 
-export default (props: ThemeProps) => {
-  const [propsState, setProps] = useState<any | null>(null);
+export default ({ children }: ThemeProps) => {
   const [theme, setTheme] = React.useState(eva.dark);
 
   const setEvaTheme = React.useCallback(() => {
@@ -21,13 +20,9 @@ export default (props: ThemeProps) => {
     });
   }, [setTheme, theme]);
 
-  useEffect(() => {
-    setProps(props.children);
-  }, [propsState]);
-
   return (
     <ThemeContext.Provider value={{ setTheme: setEvaTheme, theme: theme }}>
-      {propsState}
+      {children}
     </ThemeContext.Provider>
   );
 };
