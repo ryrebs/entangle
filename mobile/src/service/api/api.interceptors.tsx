@@ -6,7 +6,7 @@ import {
   ERROR_WITH_STATUS,
   SOMETHING_WENT_WRONG_MSG,
 } from "./api.constants";
-import { logInterceptedForDev } from "../../utils/data.util";
+// import { logInterceptedForDev } from "../../utils/data.util";
 import Constants from "expo-constants";
 
 type FnAxiosResponse = (response: any) => any;
@@ -60,13 +60,13 @@ class ResponseSuccess {
 }
 
 export const successResponseInterceptor: FnAxiosResponse = (response: any) => {
-  logInterceptedForDev({ ...response });
+  // logInterceptedForDev({ ...response });
   const result = response.data;
   return new ResponseSuccess(result);
 };
 
 export const errorResponseInterceptor = (error: any) => {
-  logInterceptedForDev({ ...error });
+  // logInterceptedForDev({ ...error });
   let response;
   if (error.response) {
     // transform all non 2xx errors
