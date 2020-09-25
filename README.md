@@ -2,9 +2,9 @@
 
 Track anyone, anywhere!
 
-- Backend server using golang and echo
+- Backend server using [Go](https://golang.org/) and [Echo](https://echo.labstack.com/)
 
-- Mobile Frameworks using React Native and Expo
+- Mobile Frameworks using React Native and [Expo](https://expo.io/)
 
 - Using [UI Kitten](https://akveo.github.io/react-native-ui-kitten/) for themes
 
