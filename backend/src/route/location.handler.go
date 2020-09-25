@@ -201,7 +201,7 @@ func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 	}
 	if err = Validate(user); err != nil {
 		msg := ExtractError(user, err)
-		util.LogInDev("ERR:updateTrackerLocationHandler", msg)
+		util.LogInDev("ERR:TargetDeleteTrackerHandler", msg)
 		return c.JSON(http.StatusBadRequest, invalidRequest)
 	}
 	if trackerID != nil {
@@ -221,7 +221,7 @@ func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 		}
 		_, err := LocationCollection.UpdateMany(context.TODO(), filter, update)
 		if err != nil {
-			util.LogInDev("ERR:TargetDeleteHandler", err.Error())
+			util.LogInDev("ERR:TargetDeleteTrackerHandler", err.Error())
 			return c.JSON(http.StatusBadRequest, errorResponse)
 		}
 	}

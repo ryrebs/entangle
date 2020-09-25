@@ -4,16 +4,16 @@ A. Build the binary:
 
 B, Create mongodb user using admin account:
 
-`mongo -u api -p apiuser --authenticationDatabase admin`
+`mongo -u <admin> -p <admin-pass> --authenticationDatabase admin`
 
 Create user, db and collection:
 
 ```
-use jobs
+use locations
 db.createCollection("locationCol")
 db.createUser( {
-	user:"server",
-	pwd: "serverpass",
+	user:"user",
+	pwd: "userpass",
 	roles: [
 	  { role: "readWrite", db: "locations" },
 
@@ -24,51 +24,45 @@ db.createUser( {
 
 C. Run dev:
 
-ENV=dev \
-PORT=5000 \
-SECRET_KEY=server_key \
-SECRET_CLIENT_KEY=client_key \
-go run ./server.go
+    ENV=dev \
+    PORT=5000 \
+    SECRET_KEY=JK^gshdf34LophsdJkj%%34%%\$$ui \
+    SECRET_CLIENT_KEY=aUi8sd%667HyaskjAjkd22SJKcjsk@#5123%^$ go run ./server.go
+
+D. Sample Requests
 
 Test token for registration contains lat, lng and signed by client secret key
 
     curl --header "Content-Type: application/json" \
     --request POST \
-    --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXQiOjEuMiwibG5nIjoxLjN9.5_tEKxoz9-9YVW0TjGfMR9nkMtbzLLNyw0PQKppOWO0"}' \
+    --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsYXQiOjEuMiwibG5nIjoyLjIsIk5hbWUiOiJ0ZXN0In0.jxAYJtFLDZhNjpw7Hzi_cYOtrY6Hyds5xaqUtchn2C4", "name": "rodel"}' \
     http://localhost:5000/auth
 
-Token w/ 1yr expiration:
+Get locations
 
-    curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTIyNDI0MjAsInN1YiI6IlwiNWVlNjVmNzQ4MzU3NmNhZWZjMjg2NTg0XCIifQ.Q5WmOKl0PTh0z67BsdjJdXToilDKWmnJS1ZNPsS3m6M" http://localhost:5000/api/location
+    curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTk0OTQ2NjQsInN1YiI6IlwiNWY1NTA4ODhmNGQzODJlOWRjMzk2NTA0XCIifQ.VkKPrPjJVq4y8R3jxTQfPs66goBDnT7LGvc-KBvJLQw" http://localhost:5000/api/location
 
-Expired token:
+Add targets
 
-    curl --header "Authorization: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NTg4Nzg2NDQsInN1YiI6IlwiNWVjZTQ0MGFiY2E0MmEzYTYzMzMwMzFlXCIiLCJqdGkiOiIxMjVkZDY1MC1lMmM1LTRhYTAtYWZlNS0xYzkwNDk5M2YyYzYiLCJpYXQiOjE1OTA1ODc3NTh9.np4cqXAzhXWFXssUOb6gmtlP1qofWYr8kmFqJDDYTxE" http://localhost:5000/api/location
+    curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTk0OTQ2NjQsInN1YiI6IlwiNWY1NTA4ODhmNGQzODJlOWRjMzk2NTA0XCIifQ.VkKPrPjJVq4y8R3jxTQfPs66goBDnT7LGvc-KBvJLQw" \
+    --request POST \
+    --data '{"targets": ["5f528dae4ed7a5b2c9df0dcd"]}' \
+    http://localhost:5000/location/addtarget
 
-db.locationCol.updateOne(
-{ "\_id" : ObjectId("5ece4ccfbca42a3a63330320") },
-{ \$push: { "trackers" : "5ece440abca42a3a6333031e" } }
-);
+Update location of tracker
 
-curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM3ODMsInN1YiI6IlwiNWVjZWJlMTczZTJhMjk5ODc0MTJiNjBjXCIifQ.i_D6dwsV_rQ3_yvniUnd_RPRiVHRMtwEqLg7P0arUTA" \
---request POST \
---data '{"targets": ["5ecebe2b3e2a29987412b60d","5ecebe2b3e2a29987412b60d","5ece4dbbc51612eedaa1aa3c","5ece6f7825ab029fd54bd508"]}' \
- http://localhost:5000/api/addtarget
+    curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTIyNDI0MjAsInN1YiI6IlwiNWVlNjVmNzQ4MzU3NmNhZWZjMjg2NTg0XCIifQ.Q5WmOKl0PTh0z67BsdjJdXToilDKWmnJS1ZNPsS3m6M" http://localhost:5000/api/location" \
+    --request POST \
+    --data '{"lat": 100.12312323, "lng": 20.1283791}' \
+    http://localhost:5000/api/updatelocation
 
-curl --header "Content-Type: application/json" --header "Authorization: curl --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTIyNDI0MjAsInN1YiI6IlwiNWVlNjVmNzQ4MzU3NmNhZWZjMjg2NTg0XCIifQ.Q5WmOKl0PTh0z67BsdjJdXToilDKWmnJS1ZNPsS3m6M" http://localhost:5000/api/location" \
- --request POST \
- --data '{"lat": 100.12312323, "lng": 20.1283791}' \
-http://localhost:5000/api/updatelocation
+Delete tracker
 
-curl -X DELETE --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM3MzUsInN1YiI6IlwiNWVjZWJkZTczZTJhMjk5ODc0MTJiNjBiXCIifQ.7MIZJaG6bmqstwYQLaSQsNhxLBV2NwNuoVXciSt4QPA" http://localhost:5000/api/deletetracker
+    curl -X DELETE --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM3MzUsInN1YiI6IlwiNWVjZWJkZTczZTJhMjk5ODc0MTJiNjBiXCIifQ.7MIZJaG6bmqstwYQLaSQsNhxLBV2NwNuoVXciSt4QPA" http://localhost:5000/api/deletetracker
 
-curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM4MDMsInN1YiI6IlwiNWVjZWJlMmIzZTJhMjk5ODc0MTJiNjBkXCIifQ.QhxJGwliv6HWNicBYawReJWghEbOG0CyatrLn3PyuMs" \
---request POST \
---data '{"targets": ["5ecebe173e2a29987412b60c","5ecebe2b3e2a29987412b60d","5ece4dbbc51612eedaa1aa3c","5ece6f7825ab029fd54bd508"]}' \
- http://localhost:5000/api/deletetrackerontarget
+Delete trackers
 
-2. 5ecebe173e2a29987412b60c
-   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM3ODMsInN1YiI6IlwiNWVjZWJlMTczZTJhMjk5ODc0MTJiNjBjXCIifQ.i_D6dwsV_rQ3_yvniUnd_RPRiVHRMtwEqLg7P0arUTA
-
-3. 5ecebe2b3e2a29987412b60d
-   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM4MDMsInN1YiI6IlwiNWVjZWJlMmIzZTJhMjk5ODc0MTJiNjBkXCIifQ.QhxJGwliv6HWNicBYawReJWghEbOG0CyatrLn3PyuMs
+    curl --header "Content-Type: application/json" --header "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTA2OTM4MDMsInN1YiI6IlwiNWVjZWJlMmIzZTJhMjk5ODc0MTJiNjBkXCIifQ.QhxJGwliv6HWNicBYawReJWghEbOG0CyatrLn3PyuMs" \
+    --request POST \
+    --data '{"targets": ["5ecebe173e2a29987412b60c","5ecebe2b3e2a29987412b60d","5ece4dbbc51612eedaa1aa3c","5ece6f7825ab029fd54bd508"]}' \
+    http://localhost:5000/api/deletetargets
