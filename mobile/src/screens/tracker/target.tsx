@@ -17,9 +17,7 @@ import * as eva from "@eva-design/eva";
 import { isTimeGreaterThan5min } from "../../utils/date.util";
 import { authSelector } from "../../store/auth/auth.reducer";
 
-// TODO:
-// Render issue
-// Slow render from map to targets component
+// TODO  Fix render issue Slow render from map to targets component
 const style = StyleSheet.create({
   sub: {
     margin: 20,
@@ -75,7 +73,7 @@ const style = StyleSheet.create({
 
 const MAX_TARGET = 20;
 
-// Icons
+/** Icons */
 const OnlineIcon = (lastUpdate: string) => {
   const activeColor = isTimeGreaterThan5min(lastUpdate) ? "#8F9BB3" : "#24650A";
   return <Icon style={style.activeIcon} fill={activeColor} name="activity" />;
@@ -119,7 +117,7 @@ const AddModal: any = ({
   }, [value, hideModalVisible, setNewTarget, newTargetList]);
   const onChangeTextReset = React.useCallback(
     (val: string) => {
-      // TODO Fix warning: cannot update while rendering.
+      // TODO Fix warning: cannot update while rendering
       setError("");
       setValue(val);
     },
@@ -166,17 +164,16 @@ export default () => {
   const [deleteTarget, setDeleteTargets] = React.useState<Array<string>>([]);
   const [newTargetList, setNewTargetList] = React.useState<Array<string>>([]);
 
-  // Callbacks
+  /** Callbacks */
   const onCheckUncheck = React.useCallback(
     (i: number, name: string) => {
       let newChecked = [];
       newChecked = [...checked];
       newChecked[i] = !checked[i];
       setChecked(newChecked);
-      // Add  items to be deleted
+      /** Add  items to be deleted */
       if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
-      // Remove uncheck items
-      else {
+      /** Remove uncheck items */ else {
         setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
       }
     },
@@ -196,7 +193,7 @@ export default () => {
   const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
   const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
 
-  // create checkboxes of tracked coordinates
+  /** create checkboxes of tracked coordinates */
   const targetInputs = targetCoords.map((l: any, i: number) => {
     const val: boolean = checked[i];
     const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
@@ -217,7 +214,7 @@ export default () => {
     );
   });
 
-  // Create new targets
+  /** Create new targets */
   const newTargets = newTargetList.map((name: string, i: number) => (
     <View key={i + "v"} style={style.newTargetWrapper}>
       <Button
@@ -232,7 +229,7 @@ export default () => {
     </View>
   ));
 
-  // Populate checked items with default values
+  /** Populate checked items with default values */
   useEffect(() => {
     let ch = [];
     for (let i = 0; i < numTargets; i++) {
@@ -243,7 +240,7 @@ export default () => {
 
   return (
     <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      {/*Upper control remaining and add btn*/}
+      {/** Upper control remaining and add btn */}
       <View style={style.AddWrapper}>
         <Text appearance="hint" style={style.sub}>
           Remaining: {numTargets}
@@ -257,7 +254,7 @@ export default () => {
         ) : null}
       </View>
 
-      {/* Add modal */}
+      {/** Add modal */}
       <AddModal
         visible={addVisible}
         newTargetList={newTargetList}
@@ -267,13 +264,13 @@ export default () => {
       />
 
       <ScrollView style={style.scrollView}>
-        {/* New targets */}
+        {/** New targets */}
         {newTargets}
-        {/* Existing targets */}
+        {/** Existing targets */}
         {targetInputs}
       </ScrollView>
 
-      {/* Track and Untrack */}
+      {/** Track and Untrack */}
       <View style={style.controlWrapper}>
         <Button
           appearance="ghost"
@@ -295,6 +292,5 @@ export default () => {
     </Layout>
   );
 };
-
 
 // TODO: Implement add and delete connection to api
