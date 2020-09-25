@@ -10,9 +10,12 @@ Track anyone, anywhere!.
 
 - Database is MongoDB
 
+|          Light          |          Dark          |
+| :---------------------: | :--------------------: |
+| <img src="lightsm.jpg"> | <img src="darksm.jpg"> |
+
+---
+
+### Setup
+
 A. Run the backend on `/operations` with `docker-compose up`.
-
-B. Light and Dark themes.
-
-<img src="lightsm.jpg">
-<img src="darksm.jpg">
