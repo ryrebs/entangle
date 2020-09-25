@@ -8,9 +8,19 @@ import {
   debounce,
   actionChannel,
 } from "redux-saga/effects";
-import { channel, buffers } from "redux-saga";
+import { channel, buffers, Channel } from "redux-saga";
 
-function* retry(count, msDelay, method, route, payload) {
+interface APIMethod {
+  (...args: any[]): any;
+}
+
+export function* retry(
+  count: number,
+  msDelay: number,
+  method: APIMethod,
+  route: String,
+  payload?: Object
+) {
   let error;
   for (let i = 0; i < count; i += 1) {
     try {
@@ -23,9 +33,9 @@ function* retry(count, msDelay, method, route, payload) {
       error = err;
     }
   }
-  // Throw the final catched error so
-  // reducers that rely on error responses
-  // can received the response data
+  /** Throw the final catched error so
+   * reducers that rely on error responses
+   * can received the response data */
   throw error;
 }
 
@@ -52,7 +62,7 @@ export function* returnErrorResponseAction(err, action) {
   }
 }
 
-function* handler(action) {
+function* handler(action: any) {
   const { resultReducerAction } = action;
   const { method, payload, route } = action;
   try {
@@ -73,7 +83,7 @@ function* handler(action) {
   }
 }
 
-function* requestHandler(chan) {
+function* requestHandler(chan: Channel<any>) {
   while (true) {
     const apiAction = yield take(chan);
     yield call(handler, apiAction);
