@@ -39,6 +39,7 @@ const isLocationAndLocationPermissionEnabled = async () => {
 
 export default () => {
   const { loading, error, token, id, errorMsg } = useSelector(authSelector);
+  const [isSpinnerVisible, setIsSpinnerVisible] = useState(false)
   const [localError, setLocalError] = useState("");
   const [name, setName] = useState("");
   const [nameError, setNameErrorMsg] = useState("");
@@ -46,6 +47,7 @@ export default () => {
 
   const onRegisterLogin = React.useCallback(async () => {
     setLocalError("");
+    setIsSpinnerVisible(true) /** Show the spinner immediately */
     if (isNameValid(name)) {
       let enabled = await isLocationAndLocationPermissionEnabled();
       if (enabled) {
@@ -65,6 +67,7 @@ export default () => {
     } else {
       setNameErrorMsg("Invalid Name or Alias");
     }
+    setIsSpinnerVisible(false)
   }, [dispatch, tokenCreate, requestRegisterAction, name]);
 
   const onChangeText = React.useCallback(
@@ -101,7 +104,7 @@ export default () => {
           value={name}
           onChangeText={onChangeText}
         />
-        {loading ? (
+        {loading || isSpinnerVisible ? (
           <Spinner status="info" />
         ) : (
           <Button
