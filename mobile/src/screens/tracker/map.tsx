@@ -71,9 +71,6 @@ const useZoomInToCoords = (map: any, coords: any, selfLocationOn: boolean) => {
   }, [selfLocationOn, map, coords]);
 };
 
-// TODO:  Effect for fetching coords transfer on saga
-const useFetchTargetCoords = () => {};
-
 const isLocationEnabled = async () => {
   return (
     (await Location.hasServicesEnabledAsync()) &&
