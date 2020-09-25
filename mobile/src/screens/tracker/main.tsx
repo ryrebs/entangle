@@ -22,7 +22,7 @@ import * as TaskManager from "expo-task-manager";
 import { useSelector, useDispatch } from "react-redux";
 import { authSelector } from "../../store/auth/auth.reducer";
 import { logoutRequestAction } from "./store/requests";
-import { stopUpdates } from "./store/saga";
+import { stopUpdateTrackerCoords, stopFetchTargetUpdates } from "./store/saga";
 
 const { Navigator, Screen } = createBottomTabNavigator();
 
@@ -54,9 +54,13 @@ const LogoutModal = ({ isModalVisible, toggleModal }) => {
   const dispatch = useDispatch();
 
   const selfDestruct = React.useCallback(async () => {
+    /** Request to delete user's data in the server */
     dispatch(logoutRequestAction());
-    dispatch(stopUpdates());
-    // TODO: stop tracker coord updates
+    /** Stop fetching for targets */
+    dispatch(stopFetchTargetUpdates());
+    /** Stop tracker coord updates */
+    dispatch(stopUpdateTrackerCoords())
+    /** Stop background location updates */
     if (await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME))
       await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
     toggleModal();
@@ -80,6 +84,7 @@ const LogoutModal = ({ isModalVisible, toggleModal }) => {
     </Modal>
   );
 };
+
 export const renderRightActions = () => {
   const { setTheme } = React.useContext(ThemeContext);
   const toggleOffOn = React.useCallback(() => {
