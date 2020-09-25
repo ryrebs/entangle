@@ -8,4 +8,9 @@ Track someone anywhere
 
 - Database is MongoDB
 
-A. Run the backend on `/operations`: `docker-compose up`
+A.  Run the backend on `/operations`: `docker-compose up`
+
+
+B. Dark and Light themes:
+
+<img src="dark.jpg"><img src="light.jpg">
