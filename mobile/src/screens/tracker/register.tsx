@@ -10,7 +10,7 @@ import {
 } from "@ui-kitten/components";
 import { renderRightActions } from "./main";
 import { requestRegisterAction } from "../../store/auth/auth.request";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch, batch } from "react-redux";
 import * as Location from "expo-location";
 import tokenCreate from "../../utils/token.util";
 import * as TaskManager from "expo-task-manager";
@@ -20,9 +20,11 @@ import { store } from "../../store";
 import { useWindowDimensions } from "react-native";
 import { authSelector } from "../../store/auth/auth.reducer";
 import { updateTrackerCoordsAction } from "./store/saga";
+import Constants from "expo-constants";
 
-const TIME_INTERVAL = 5000; //15000; // Receive location updates every 5 seconds
-const DISTANCE_INTERVAL = 0; //40; // Receive update with distance 30 meters
+const TIME_INTERVAL =
+  Constants.manifest.extra.EXPO_ENV === "dev" ? 5000 : 15000; // Receive location updates every 5 seconds
+const DISTANCE_INTERVAL = Constants.manifest.extra.EXPO_ENV === "dev" ? 0 : 40; // Receive update with distance 30 meters
 export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
 const isNameValid = (name: string) => {
@@ -47,16 +49,15 @@ export default () => {
     if (isNameValid(name)) {
       let enabled = await isLocationAndLocationPermissionEnabled();
       if (enabled) {
-        // Immediately get the current position
-        // don't wait for the background location task to start
+        /** Immediately get the current position */
+        /** don't wait for the background location task to start */
         let location: any = await Location.getCurrentPositionAsync({});
         if (location !== null) {
           const { coords } = location;
           const token = tokenCreate(coords.latitude, coords.longitude);
           if (token !== null) {
-            // TODO: remove after testing
             dispatch(requestRegisterAction(token, name));
-            // Start background location task updates
+            /** Start background location task updates */
             await initBackgroundLocationTaskAync();
           } else setLocalError("Something went wrong!");
         }
@@ -113,6 +114,7 @@ export default () => {
             Register
           </Button>
         )}
+        {/* TODO: Create re-usable component */}
         {nameError != "" ? (
           <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
             {nameError}. Please try again.
@@ -129,13 +131,12 @@ export default () => {
           </Text>
         ) : null}
         <Divider />
-        {/* TODO: Show error, dispatch error on saga, reset register state */}
       </Layout>
     </SafeAreaView>
   );
 };
 
-// Ask permission for using location
+/** Ask permission for using location */
 export const getPermissionForLocationAync = async () => {
   let { granted } = await Location.requestPermissionsAsync();
   if (granted) {
@@ -144,7 +145,7 @@ export const getPermissionForLocationAync = async () => {
   return false;
 };
 
-// Initialize background location update options
+/** Initialize background location update options */
 const initBackgroundLocationTaskAync = async () =>
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: 6,
@@ -157,7 +158,7 @@ const initBackgroundLocationTaskAync = async () =>
     },
   });
 
-// Task for background location updates
+/** Task for background location updates */
 TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (error) {
     logInterceptedForDev({ error });
@@ -166,8 +167,12 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (data) {
     const { locations }: any = data;
     if (locations !== null && locations.length > 0) {
-      store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
-      store.dispatch(updateTrackerCoordsAction({ location: locations[0] }));
+      batch(() => {
+        /** Update data on reducer */
+        store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
+        /** Update tracker's coord on db */
+        store.dispatch(updateTrackerCoordsAction({ location: locations[0] }));
+      });
     }
   }
 });
