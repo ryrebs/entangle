@@ -169,9 +169,21 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
     if (locations !== null && locations.length > 0) {
       batch(() => {
         /** Update data on reducer */
-        store.dispatch(updateCoordsReducerAction({ location: locations[0] }));
+        store.dispatch(
+          updateCoordsReducerAction({ coords: locations[0].coords })
+        );
         /** Update tracker's coord on db */
-        store.dispatch(updateTrackerCoordsAction({ location: locations[0] }));
+        store.dispatch(
+          updateTrackerCoordsAction({ coords: locations[0].coords })
+        );
+        /** Where location = {
+         *    coords: { ....
+         *             "latitude": 10.2997459
+         *             "longitude": 123.8935165,
+         *             "speed": 0.0223002340644598, },
+         *            timestamp: {...}
+         * }
+         */
       });
     }
   }
