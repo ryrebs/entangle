@@ -64,27 +64,38 @@ function* getTargetsHandler() {
 }
 
 function* getTargets() {
-  yield take(START_FETCH_TARGETS);
-  const task = yield fork(getTargetsHandler);
-  yield take(STOP_FETCH_TARGETS);
-  yield cancel(task);
+  while (true) {
+    yield take(START_FETCH_TARGETS);
+    const task = yield fork(getTargetsHandler);
+    yield take(STOP_FETCH_TARGETS);
+    yield cancel(task);
+  }
 }
 
-function* updateTrackerCoordsHandler(action: any) {
-  const { payload } = action;
-  const method = ApiService.getApi().post;
-  const count = 2;
+function* updateTrackerCoordsHandler() {
   while (true) {
-      yield retry(count, DELAY_BEFORE_RETRY, method, TRACKER_ROUTE, payload);
-      yield delay(DELAY_BEFORE_NEXT_API_REQUEST)
+    const action = yield take(UPDATE_TRACKER_COORDS);
+    const { coords } = action.payload;
+    const method = ApiService.getApi().post;
+    const count = 2;
+    if (coords !== null) {
+      const { latitude, longitude } = coords;
+      const pyl = {
+        lat: latitude,
+        lng: longitude,
+      };
+      yield retry(count, DELAY_BEFORE_RETRY, method, TRACKER_ROUTE, pyl);
+      yield delay(DELAY_BEFORE_NEXT_API_REQUEST);
+    }
   }
 }
 
 function* updateTrackerCoords() {
-  const action = yield take(UPDATE_TRACKER_COORDS);
-  const task = yield fork(updateTrackerCoordsHandler, action);
-  yield take(STOP_UPDATE_TRACKER_COORDS);
-  yield cancel(task);
+  while (true) {
+    const task = yield fork(updateTrackerCoordsHandler);
+    yield take(STOP_UPDATE_TRACKER_COORDS);
+    yield cancel(task);
+  }
 }
 export default function* () {
   yield all([call(getTargets), call(updateTrackerCoords)]);
