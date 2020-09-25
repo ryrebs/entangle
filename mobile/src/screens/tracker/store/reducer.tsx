@@ -14,9 +14,8 @@ const targetResponseSelector = createSelector(
 const trackerCoordsSelector = createSelector(
   (state: targetState) => state.tracker,
   (tracker) => {
-    if (tracker["tracker/coords"].location != null) {
-      const { coords } = tracker["tracker/coords"].location;
-      return coords;
+    if (tracker["tracker/coords"] != null) {
+      return tracker["tracker/coords"];
     }
     return null;
   }
@@ -34,7 +33,7 @@ const initialState = {
     response: [],
     errorMsg: "",
   },
-  "tracker/coords": { location: null },
+  "tracker/coords": null,
 };
 
 const trackerSlice = createSlice({
@@ -57,7 +56,7 @@ const trackerSlice = createSlice({
     },
     updateCoordsReducerAction: (state, action) => {
       const stateKey = "tracker/coords";
-      state[stateKey].location = { ...action.payload.location };
+      state[stateKey] = { ...action.payload.coords };
     },
   },
 });
