@@ -155,7 +155,7 @@ func createUser(lat, lng float64, name string) []byte {
 	})
 	id := db.InsertOne(user, LocationCollection)
 	if id != nil {
-		util.LogInDev("::::ID::::", id)
+		util.LogInDev("::::CREATED ID::::", id)
 		d, _ := id.(primitive.ObjectID).MarshalJSON()
 		return d
 	}
@@ -237,7 +237,7 @@ func validateServerToken(token string) (*jwt.StandardClaims, bool) {
 			return []byte(SecretKey), nil
 		})
 		if clms, ok := t.Claims.(*jwt.StandardClaims); ok && t.Valid {
-			util.LogInDev("TRACKER", clms.Subject)
+			util.LogInDev("VALIDATE SERVER TOKEN TRACKER", clms.Subject)
 			err := validateTrackerExistence(clms.Subject)
 			if err != nil {
 				return nil, false
@@ -251,7 +251,7 @@ func validateServerToken(token string) (*jwt.StandardClaims, bool) {
 }
 
 func setTrackerExpiredStatus(id string) {
-	util.LogInDev("TRACKER", id)
+	util.LogInDev("EXPIRED TRACKER", id)
 	changes := struct{ Status string }{Status: "Expired"}
 	filter := db.CreateObjectID(id)
 	setChanges := struct {

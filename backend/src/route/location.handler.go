@@ -55,6 +55,7 @@ func LocationHandler(c echo.Context) (err error) {
 			})
 		}
 	}
+	util.LogInDev("GET TARGETS", result)
 	return c.JSON(http.StatusOK, Response{
 		Status:  http.StatusOK,
 		Message: "targets",
@@ -183,7 +184,7 @@ func deleteTrackerOnTarget(id string) {
 	if err != nil {
 		util.LogInDev("ERR:deleteTrackerOnTarget", err.Error())
 	}
-	util.LogInDev("deleteTrackerOnTargetdeleteTrackerOnTarget", "DONE")
+	util.LogInDev("REQUEST DELETE DONE ON", id)
 }
 
 // TargetDeleteTrackerHandler - remove trackers, this will stop the target from being tracked
