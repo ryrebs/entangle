@@ -2,7 +2,7 @@ A. Build the binary:
 
 `CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o backend .`
 
-B, Create mongodb user using admin account:
+B. Create mongodb user using admin account:
 
 `mongo -u <admin> -p <admin-pass> --authenticationDatabase admin`
 
@@ -22,7 +22,7 @@ db.createUser( {
   )
 ```
 
-C. Run dev:
+C. Run dev (Replace dev keys with prod secret keys):
 
     ENV=dev \
     PORT=5000 \
@@ -33,7 +33,7 @@ D. Run docs server (wip)
 
 ---
 
-Sample Requests
+**Sample Requests:**
 
 Test token for registration contains lat, lng and signed by client secret key
 
