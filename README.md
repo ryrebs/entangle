@@ -18,4 +18,6 @@ Track anyone, anywhere!
 
 ### Setup [WIP]
 
-A. Run the backend on `/operations` with `docker-compose up`.
+A. Replace all dev keys and certs.
+
+B. Run the backend on `/operations` with `docker-compose up`.
