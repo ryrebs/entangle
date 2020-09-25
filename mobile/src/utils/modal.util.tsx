@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, ReactPropTypes } from "react";
 import { StyleSheet, View } from "react-native";
 import { Layout, Text, Button, Icon, Modal, Card } from "@ui-kitten/components";
 
@@ -20,29 +20,37 @@ const style = StyleSheet.create({
   },
 });
 
-export default React.memo(
-  ({ isVisible, setIsVisible, headerText, children }) => {
-    const closeModal = React.useCallback(() => {
-      setIsVisible(false);
-    }, [setIsVisible]);
+interface ModalFC {
+  (...args: any[]): any;
+}
 
-    return (
-      <Modal visible={isVisible} onBackdropPress={closeModal}>
-        <Card
-          style={{ width: 220 }}
-          header={() => (
-            <View style={style.cardContainer}>
-              <Layout level="1" style={style.cardHeaderText}>
-                <Text style={{ fontSize: 14, alignSelf: "center" }}>
-                  {headerText}
-                </Text>
-              </Layout>
-            </View>
-          )}
-        >
-          {children}
-        </Card>
-      </Modal>
-    );
-  }
-);
+const UtilModal: ModalFC = ({
+  isVisible,
+  setIsVisible,
+  headerText,
+  children,
+}) => {
+  const closeModal = React.useCallback(() => {
+    setIsVisible(false);
+  }, [setIsVisible]);
+
+  return (
+    <Modal visible={isVisible} onBackdropPress={closeModal}>
+      <Card
+        style={{ width: 220 }}
+        header={() => (
+          <View style={style.cardContainer}>
+            <Layout level="1" style={style.cardHeaderText}>
+              <Text style={{ fontSize: 14, alignSelf: "center" }}>
+                {headerText}
+              </Text>
+            </Layout>
+          </View>
+        )}
+      >
+        {children}
+      </Card>
+    </Modal>
+  );
+};
+export default UtilModal;
