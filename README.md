@@ -1,6 +1,6 @@
 ## Entangle
 
-Track anyone, anywhere!.
+Track anyone, anywhere!
 
 - Backend server using golang and echo
 
