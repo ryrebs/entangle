@@ -16,11 +16,17 @@ const extractEnv = () => {
   }
 };
 
-export default ({ config }) => ({
-  ...config,
-  ...{
-    name: "Entangle",
-    version: "1.0.0",
-    extra: extractEnv(),
-  },
-});
+export default ({ config }) => {
+  // Set android and ios google map keys from environment
+  config.ios.config.googleMapsApiKey = process.env.EXPO_IOS_GOOGLE_MAP_API_KEY;
+  config.android.config.googleMaps =
+    process.env.EXPO_ANDROID_GOOGLE_MAP_API_KEY;
+  return {
+    ...config,
+    ...{
+      name: "Entangle",
+      version: "1.0.0",
+      extra: extractEnv(),
+    },
+  };
+};

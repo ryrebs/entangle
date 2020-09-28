@@ -26,7 +26,7 @@
         "UIBackgroundModes": ["location", "fetch"]
       },
       "config": {
-        "googleMapsApiKey": "AIzaSyCvjP3EbFqURvrhoQEUabr5M5gKW0Dc3vo"
+        "googleMapsApiKey": ""
       }
     },
     "android": {
@@ -34,7 +34,7 @@
       "versionCode": 1,
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyBcETUAqw1yypQeX7FjxrY9E7ppp_g695Y"
+          "apiKey": ""
         }
       }
     }
