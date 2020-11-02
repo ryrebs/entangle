@@ -44,3 +44,9 @@ keytool -export -rfc \
 ### Option 3:
 
 Create your own keystore and your upload key and let google play handle app signing key for you. (Recommended)
+
+Building stand alone app:
+
+1. Export: `EXPO_USERNAME`, `EXPO_PASSWORD` and `EXPO_KEYSTORE_ALIAS`
+
+2. Run `sh ./build.sh`
