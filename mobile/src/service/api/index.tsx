@@ -6,7 +6,7 @@ import {
 import api from "./Api.service";
 import Constants from "expo-constants";
 
-const TIMEOUT = 300 * 1000;
+const TIMEOUT = 60 * 1000;
 
 export const API_HOST = Constants.manifest.extra.EXPO_API;
 
