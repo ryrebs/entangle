@@ -17,7 +17,7 @@ import TargetScreen from "./target";
 import MapScreen from "./map";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as Location from "expo-location";
-import { LOCATION_TASK_NAME } from "./register";
+import { LOCATION_TASK_NAME, initBackgroundLocationTaskAync } from "./register";
 import * as TaskManager from "expo-task-manager";
 import { useSelector, useDispatch } from "react-redux";
 import { authSelector } from "../../store/auth/auth.reducer";
@@ -59,7 +59,7 @@ const LogoutModal = ({ isModalVisible, toggleModal }) => {
     /** Stop fetching for targets */
     dispatch(stopFetchTargetUpdates());
     /** Stop tracker coord updates */
-    dispatch(stopUpdateTrackerCoords())
+    dispatch(stopUpdateTrackerCoords());
     /** Stop background location updates */
     if (await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME))
       await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
@@ -123,6 +123,13 @@ export default () => {
       }
     );
   }, [id]);
+
+  /** Start background location task updates */
+  React.useEffect(() => {
+    async () => {
+      await initBackgroundLocationTaskAync();
+    };
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
