@@ -19,7 +19,7 @@ const style = StyleSheet.create({
     justifyContent: "space-between",
   },
   cardHeaderText: {
-    alignSelf: "flex-start",
+    alignSelf: "center",
     margin: 10,
   },
   cardClose: {
@@ -32,15 +32,16 @@ const style = StyleSheet.create({
     margin: 2,
   },
   list: {
+    backgroundColor: "#222B45",
     height: Dimensions.get("window").height * 0.3,
   },
 });
 
 const targetMenuIcon = () => (
-  <Icon style={style.icon} name="radio-button-off" />
+  <Icon style={style.icon} fill="#9EADC8" name="radio-button-off" />
 );
 
-const Item = React.memo(({ item, zoomToCoords }) => {
+const Item = React.memo(({ item, zoomToCoords }: any) => {
   return (
     <ListItem
       title={item.name}
@@ -51,7 +52,7 @@ const Item = React.memo(({ item, zoomToCoords }) => {
 });
 
 export default React.memo(
-  ({ setIsTargetModalVisible, isTargetModalVisible, targets, map }) => {
+  ({ setIsTargetModalVisible, isTargetModalVisible, targets, map }: any) => {
     const closeModal = React.useCallback(() => {
       setIsTargetModalVisible(false);
     }, []);
@@ -92,8 +93,8 @@ export default React.memo(
                 <Button
                   onPress={closeModal}
                   appearance="ghost"
-                  accessoryLeft={() => (
-                    <Icon style={style.cardClose} name="close" />
+                  accessoryRight={() => (
+                    <Icon style={style.cardClose} fill="#9EADC8" name="close" />
                   )}
                 />
               </Layout>

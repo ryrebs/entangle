@@ -39,7 +39,7 @@ export function* retry(
   throw error;
 }
 
-export function* returnErrorResponseAction(err, action) {
+export function* returnErrorResponseAction(err: any, action: any) {
   const { response } = err;
   if (response) {
     yield put(

@@ -32,41 +32,56 @@ export const updateTrackerCoordsAction: (action: any) => any = createAction(
 export const stopUpdateTrackerCoords = createAction(STOP_UPDATE_TRACKER_COORDS);
 
 function* getTargetsHandler() {
-  while (true) {
-    try {
-      yield put(getTargetsStartedReducerAction());
-      const res = yield call(ApiService.getApi().get, TARGET_ROUTE);
-      const { response } = res;
-      yield put(
-        getTargetsReducerAction({
-          response,
-          loading: false,
-          error: false,
-          errorMsg: null,
-        })
-      );
-    } catch (error) {
-      const { response } = error;
-      let res;
-      if (response) res = response;
-      else res = null;
-      yield put(
-        getTargetsReducerAction({
-          loading: false,
-          response: null,
-          error: true,
-          errorMsg: error.message || "",
-        })
-      );
-    }
-    yield delay(DELAY_BEFORE_NEXT_API_REQUEST);
+  try {
+    yield put(getTargetsStartedReducerAction());
+    const res = yield call(ApiService.getApi().get, TARGET_ROUTE);
+    const { response } = res;
+    yield put(
+      getTargetsReducerAction({
+        response,
+        loading: false,
+        error: false,
+        errorMsg: null,
+      })
+    );
+  } catch (error) {
+    const { response } = error;
+    let res;
+    if (response) res = response;
+    else res = null;
+    yield put(
+      getTargetsReducerAction({
+        loading: false,
+        response: null,
+        error: true,
+        errorMsg: error.message || "",
+      })
+    );
   }
 }
 
+/** Get targets once */
 function* getTargets() {
   while (true) {
     yield take(START_FETCH_TARGETS);
     const task = yield fork(getTargetsHandler);
+    yield take(STOP_FETCH_TARGETS);
+    yield cancel(task);
+  }
+}
+
+function* getTargetsHandlerLoop() {
+  while (true) {
+    yield call(getTargetsHandler);
+    yield delay(DELAY_BEFORE_NEXT_API_REQUEST);
+  }
+}
+
+/** Start fetching targets every N seconds */
+function* getTargetsLoop() {
+  while (true) {
+    yield take(START_FETCH_TARGETS);
+    const task = yield fork(getTargetsHandlerLoop);
     yield take(STOP_FETCH_TARGETS);
     yield cancel(task);
   }
@@ -90,6 +105,7 @@ function* updateTrackerCoordsHandler() {
   }
 }
 
+/** Updates the location of the user/tracker on database */
 function* updateTrackerCoords() {
   while (true) {
     const task = yield fork(updateTrackerCoordsHandler);
@@ -98,5 +114,9 @@ function* updateTrackerCoords() {
   }
 }
 export default function* () {
-  yield all([call(getTargets), call(updateTrackerCoords)]);
+  yield all([
+    call(getTargetsLoop),
+    call(updateTrackerCoords),
+    call(getTargets),
+  ]);
 }

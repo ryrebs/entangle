@@ -91,105 +91,109 @@ const MinusIcon = (props: any) => {
   return <Icon {...props} fill="#0D9FA9" name="minus" />;
 };
 
-const AddModal: any = ({
-  visible,
-  setNumTargets,
-  hideModalVisible,
-  setNewTarget,
-  newTargetList,
-}) => {
-  const { id } = useSelector(authSelector);
-  const [value, setValue] = React.useState("");
-  const [error, setError] = React.useState("");
-  const add = React.useCallback(() => {
-    const matchRegex = /^\w+$/;
-    if (value === id) {
-      setError("Don't track yourself!");
-    } else if (newTargetList.includes(value)) {
-      setError("ID Exists!");
-    } else if (matchRegex.test(value)) {
-      setNewTarget((l: Array<string>) => [...l, ...[value]]);
-      hideModalVisible();
-      setNumTargets((l: number) => l - 1);
-    } else {
-      setError("Invalid ID");
-    }
-  }, [value, hideModalVisible, setNewTarget, newTargetList]);
-  const onChangeTextReset = React.useCallback(
-    (val: string) => {
-      // TODO Fix warning: cannot update while rendering
-      setError("");
-      setValue(val);
-    },
-    [setValue, setError]
-  );
+/** Add new target modal */
+const AddModal: any = React.memo(
+  ({
+    visible,
+    setNumTargets,
+    hideModalVisible,
+    setNewTarget,
+    newTargetList,
+  }: any) => {
+    const { id } = useSelector(authSelector);
+    const [value, setValue] = React.useState("");
+    const [error, setError] = React.useState("");
+    const add = React.useCallback(() => {
+      const matchRegex = /^\w+$/;
+      if (value === id) {
+        setError("Don't track yourself!");
+      } else if (newTargetList.includes(value)) {
+        setError("ID Exists!");
+      } else if (matchRegex.test(value)) {
+        setNewTarget((l: Array<string>) => [...l, ...[value]]);
+        hideModalVisible();
+        setNumTargets((l: number) => l - 1);
+      } else {
+        setError("Invalid ID");
+      }
+    }, [value, hideModalVisible, setNewTarget, newTargetList]);
+    const onChangeTextReset = React.useCallback(
+      (val: string) => {
+        // TODO Fix warning: cannot update while rendering
+        setError("");
+        setValue(val);
+      },
+      [setValue, setError]
+    );
 
-  const label = "Track an ID: ";
-  const labelWithError = error !== "" ? label + error : label;
-  return (
-    <Modal
-      style={{
-        padding: 24,
-        flex: 1,
-        justifyContent: "space-around",
-        top: Dimensions.get("window").height * 0.2,
-      }}
-      visible={visible}
-      backdropStyle={style.backdrop}
-      onBackdropPress={hideModalVisible}
-    >
-      <Card disabled={true}>
-        <Input
-          label={labelWithError}
-          style={style.addInput}
-          status="basic"
-          placeholder="ID"
-          value={value}
-          onChangeText={onChangeTextReset}
-        />
-        <Button onPress={add}>Add</Button>
-      </Card>
-    </Modal>
-  );
-};
+    const label = "Track an ID: ";
+    const labelWithError = error !== "" ? label + error : label;
+    return (
+      <Modal
+        style={{
+          padding: 24,
+          flex: 1,
+          justifyContent: "space-around",
+          top: Dimensions.get("window").height * 0.2,
+        }}
+        visible={visible}
+        backdropStyle={style.backdrop}
+        onBackdropPress={hideModalVisible}
+      >
+        <Card disabled={true}>
+          <Input
+            label={labelWithError}
+            style={style.addInput}
+            status="basic"
+            placeholder="ID"
+            value={value}
+            onChangeText={onChangeTextReset}
+          />
+          <Button onPress={add}>Add</Button>
+        </Card>
+      </Modal>
+    );
+  }
+);
 
 export default () => {
   const { theme } = React.useContext(ThemeContext);
   const [addVisible, setAddVisible] = React.useState<boolean>(false);
   const [checked, setChecked] = React.useState<Array<boolean>>([]);
-  const targetCoords = useSelector(targetsCoordsSelector);
+  let targetCoords = useSelector(targetsCoordsSelector);
   const [numTargets, setNumTargets] = React.useState(
     MAX_TARGET - targetCoords.length
   );
   const [deleteTarget, setDeleteTargets] = React.useState<Array<string>>([]);
   const [newTargetList, setNewTargetList] = React.useState<Array<string>>([]);
 
+  // TODO: remove after testing
+  targetCoords = [
+    {
+      name: "sample",
+      lastUpdate: "1606227998",
+    },
+  ];
+
   /** Callbacks */
-  const onCheckUncheck = React.useCallback(
-    (i: number, name: string) => {
-      let newChecked = [];
-      newChecked = [...checked];
-      newChecked[i] = !checked[i];
-      setChecked(newChecked);
-      /** Add  items to be deleted */
-      if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
-      /** Remove uncheck items */ else {
-        setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
-      }
-    },
-    [checked, setChecked, setDeleteTargets]
-  );
-  const onItemUncheckIcon = React.useCallback(
-    (props) => RemoveIcon(props, deleteTarget),
-    [deleteTarget]
-  );
-  const onRemoveNewTarget = React.useCallback(
-    (name: string) => {
-      setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
-      setNumTargets((i: number) => i + 1);
-    },
-    [setNewTargetList, setNumTargets]
-  );
+  const onCheckUncheck = (i: number, name: string) => {
+    let newChecked = [];
+    newChecked = [...checked]; // Create copy
+    newChecked[i] = !checked[i]; // Flip the value
+    setChecked(newChecked); // Update checked list
+
+    /** Add  items to be deleted */
+    if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
+    /** Remove uncheck items */ else {
+      setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
+    }
+  };
+  const onItemUncheckIcon = (props: any) => RemoveIcon(props, deleteTarget);
+
+  const onRemoveNewTarget = (name: string) => {
+    setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
+    setNumTargets((i: number) => i + 1);
+  };
   const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
   const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
 
@@ -273,6 +277,11 @@ export default () => {
       {/** Track and Untrack */}
       <View style={style.controlWrapper}>
         <Button
+          onPress={() => {
+            // TODO:
+            // dispatch an adding of targets
+            // followed by a refresh
+          }}
           appearance="ghost"
           status="basic"
           accessoryRight={(props: any) =>
@@ -282,6 +291,10 @@ export default () => {
           Track
         </Button>
         <Button
+          onPress={() => {
+            // TODO:
+            // dispatch delete followed by a refresh
+          }}
           appearance="ghost"
           status="basic"
           accessoryRight={onItemUncheckIcon}
