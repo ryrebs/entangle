@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactPropTypes } from "react";
 import { Alert, Clipboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Divider, TopNavigation } from "@ui-kitten/components";
@@ -30,7 +30,7 @@ const MapIcon = (props: any) => <Icon {...props} name="globe" />;
 
 const PeopleIcon = (props: any) => <Icon {...props} name="person" />;
 
-const BottomTabBar = ({ navigation, state }) => (
+const BottomTabBar = ({ navigation, state }: any) => (
   <BottomNavigation
     selectedIndex={state.index}
     onSelect={(index) => navigation.navigate(state.routeNames[index])}
@@ -40,17 +40,17 @@ const BottomTabBar = ({ navigation, state }) => (
   </BottomNavigation>
 );
 
-const ThemeIcon = (props) => {
+const ThemeIcon = (props: ReactPropTypes) => {
   const { theme } = React.useContext(ThemeContext);
   return <Icon {...props} name={theme === eva.dark ? "moon" : "sun"} />;
 };
 
-const LogoutIcon = (props) => {
+const LogoutIcon = (props: ReactPropTypes) => {
   const { theme } = React.useContext(ThemeContext);
   return <Icon {...props} name="log-out" />;
 };
 
-const LogoutModal = ({ isModalVisible, toggleModal }) => {
+const LogoutModal = ({ isModalVisible, toggleModal }: any) => {
   const dispatch = useDispatch();
 
   const selfDestruct = React.useCallback(async () => {
