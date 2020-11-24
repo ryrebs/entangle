@@ -39,7 +39,7 @@ const isLocationAndLocationPermissionEnabled = async () => {
 
 export default () => {
   const { loading, error, token, id, errorMsg } = useSelector(authSelector);
-  const [isSpinnerVisible, setIsSpinnerVisible] = useState(false)
+  const [isSpinnerVisible, setIsSpinnerVisible] = useState(false);
   const [localError, setLocalError] = useState("");
   const [name, setName] = useState("");
   const [nameError, setNameErrorMsg] = useState("");
@@ -47,27 +47,24 @@ export default () => {
 
   const onRegisterLogin = React.useCallback(async () => {
     setLocalError("");
-    setIsSpinnerVisible(true) /** Show the spinner immediately */
+    setIsSpinnerVisible(true); /** Show the spinner immediately */
     if (isNameValid(name)) {
       let enabled = await isLocationAndLocationPermissionEnabled();
       if (enabled) {
         /** Immediately get the current position */
-        /** don't wait for the background location task to start */
         let location: any = await Location.getCurrentPositionAsync({});
         if (location !== null) {
           const { coords } = location;
           const token = tokenCreate(coords.latitude, coords.longitude);
           if (token !== null) {
             dispatch(requestRegisterAction(token, name));
-            /** Start background location task updates */
-            await initBackgroundLocationTaskAync();
           } else setLocalError("Something went wrong!");
         }
       } else setLocalError("Turn on Location and enable Permission");
     } else {
       setNameErrorMsg("Invalid Name or Alias");
     }
-    setIsSpinnerVisible(false)
+    setIsSpinnerVisible(false);
   }, [dispatch, tokenCreate, requestRegisterAction, name]);
 
   const onChangeText = React.useCallback(
@@ -119,17 +116,26 @@ export default () => {
         )}
         {/* TODO: Create re-usable component */}
         {nameError != "" ? (
-          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+          <Text
+            style={{ paddingTop: 40, textAlign: "center", fontSize: 12 }}
+            status="danger"
+          >
             {nameError}. Please try again.
           </Text>
         ) : null}
         {error ? (
-          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+          <Text
+            style={{ paddingTop: 40, textAlign: "center", fontSize: 12 }}
+            status="danger"
+          >
             {errorMsg}. Please try again.
           </Text>
         ) : null}
         {localError !== "" ? (
-          <Text style={{ paddingTop: 40, fontSize: 12 }} status="danger">
+          <Text
+            style={{ paddingTop: 40, textAlign: "center", fontSize: 12 }}
+            status="danger"
+          >
             {localError}. Please try again.
           </Text>
         ) : null}
@@ -149,7 +155,7 @@ export const getPermissionForLocationAync = async () => {
 };
 
 /** Initialize background location update options */
-const initBackgroundLocationTaskAync = async () =>
+export const initBackgroundLocationTaskAync = async () =>
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: 6,
     timeInterval: TIME_INTERVAL,
