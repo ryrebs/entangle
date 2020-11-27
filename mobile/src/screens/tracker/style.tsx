@@ -196,4 +196,57 @@ const mapStyle = [
   },
 ];
 
-export { mapStyle, styles };
+const targetStyle = StyleSheet.create({
+  sub: {
+    margin: 20,
+  },
+  input: {
+    margin: 10,
+  },
+  scrollView: {
+    width: Dimensions.get("window").width * 0.8,
+    marginBottom: 5,
+  },
+  controlWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    height: 50,
+    marginBottom: 15,
+  },
+  newTargetWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+  },
+  cbDark: {
+    backgroundColor: "#222B45",
+    borderColor: "#222B45",
+  },
+  cbWhite: {
+    backgroundColor: "#F7F9FC",
+    borderColor: "#F7F9FC",
+  },
+  AddWrapper: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  CheckBoxWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingRight: 20,
+  },
+  backdrop: {
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  activeIcon: {
+    height: 20,
+    width: 20,
+  },
+  addInput: {
+    width: 200,
+  },
+});
+
+export { mapStyle, styles, targetStyle };
