@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { StyleSheet, ScrollView, Dimensions, View } from "react-native";
+import { ScrollView, Dimensions, View } from "react-native";
 import {
   Layout,
   Text,
@@ -16,60 +16,7 @@ import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as eva from "@eva-design/eva";
 import { isTimeGreaterThan5min } from "../../utils/date.util";
 import { authSelector } from "../../store/auth/auth.reducer";
-
-// TODO  Fix render issue Slow render from map to targets component
-const style = StyleSheet.create({
-  sub: {
-    margin: 20,
-  },
-  input: {
-    margin: 10,
-  },
-  scrollView: {
-    width: Dimensions.get("window").width * 0.8,
-    marginBottom: 5,
-  },
-  controlWrapper: {
-    display: "flex",
-    flexDirection: "row",
-    height: 50,
-    marginBottom: 15,
-  },
-  newTargetWrapper: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-start",
-  },
-  cbDark: {
-    backgroundColor: "#222B45",
-    borderColor: "#222B45",
-  },
-  cbWhite: {
-    backgroundColor: "#F7F9FC",
-    borderColor: "#F7F9FC",
-  },
-  AddWrapper: {
-    display: "flex",
-    flexDirection: "row",
-  },
-  CheckBoxWrapper: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingRight: 20,
-  },
-  backdrop: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  activeIcon: {
-    height: 20,
-    width: 20,
-  },
-  addInput: {
-    width: 200,
-  },
-});
+import { targetStyle as style } from "./style";
 
 const MAX_TARGET = 20;
 
@@ -156,70 +103,27 @@ const AddModal: any = React.memo(
   }
 );
 
-export default () => {
-  const { theme } = React.useContext(ThemeContext);
-  const [addVisible, setAddVisible] = React.useState<boolean>(false);
-  const [checked, setChecked] = React.useState<Array<boolean>>([]);
-  let targetCoords = useSelector(targetsCoordsSelector);
-  const [numTargets, setNumTargets] = React.useState(
-    MAX_TARGET - targetCoords.length
-  );
-  const [deleteTarget, setDeleteTargets] = React.useState<Array<string>>([]);
-  const [newTargetList, setNewTargetList] = React.useState<Array<string>>([]);
-
-  // TODO: remove after testing
-  targetCoords = [
-    {
-      name: "sample",
-      lastUpdate: "1606227998",
-    },
-  ];
-
-  /** Callbacks */
-  const onCheckUncheck = (i: number, name: string) => {
-    let newChecked = [];
-    newChecked = [...checked]; // Create copy
-    newChecked[i] = !checked[i]; // Flip the value
-    setChecked(newChecked); // Update checked list
-
-    /** Add  items to be deleted */
-    if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
-    /** Remove uncheck items */ else {
-      setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
+/** Track and untrack component  */
+const TrackUntrackBTN = ({ newTargetList, deleteTarget, children }: any) => {
+  const onTrackPress = () => {
+    if (newTargetList.length > 0) {
+      console.log(newTargetList);
     }
   };
-  const onItemUncheckIcon = (props: any) => RemoveIcon(props, deleteTarget);
-
-  const onRemoveNewTarget = (name: string) => {
-    setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
-    setNumTargets((i: number) => i + 1);
+  const onUntrackPress = () => {
+    if (deleteTarget.length > 0) {
+      console.log(deleteTarget);
+    }
   };
-  const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
-  const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
-
-  /** create checkboxes of tracked coordinates */
-  const targetInputs = targetCoords.map((l: any, i: number) => {
-    const val: boolean = checked[i];
-    const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
-    return (
-      <View key={i + "v"} style={style.CheckBoxWrapper}>
-        <CheckBox
-          title={l.name}
-          containerStyle={cbTheme}
-          key={i}
-          checkedIcon="dot-circle-o"
-          uncheckedColor="#50515B"
-          checkedColor="#6D363F"
-          checked={val}
-          onPress={() => onCheckUncheck(i, l.name)}
-        />
-        {OnlineIcon(l.lastUpdate)}
-      </View>
-    );
+  return children({
+    onTrackPress,
+    onUntrackPress,
   });
+};
 
-  /** Create new targets */
-  const newTargets = newTargetList.map((name: string, i: number) => (
+/** New target component */
+const NewTargets = ({ newTargetList, onRemoveNewTarget }: any) => {
+  return newTargetList.map((name: string, i: number) => (
     <View key={i + "v"} style={style.newTargetWrapper}>
       <Button
         key={i}
@@ -232,6 +136,45 @@ export default () => {
       </Button>
     </View>
   ));
+};
+
+/** Main component */
+export default () => {
+  const { theme } = React.useContext(ThemeContext);
+  const [addVisible, setAddVisible] = React.useState<boolean>(false);
+  const [checked, setChecked] = React.useState<Array<boolean>>([]);
+  const targetCoords = useSelector(targetsCoordsSelector);
+  const [numTargets, setNumTargets] = React.useState(
+    MAX_TARGET - targetCoords.length
+  );
+  const [deleteTarget, setDeleteTargets] = React.useState<Array<string>>([]);
+  const [newTargetList, setNewTargetList] = React.useState<Array<string>>([]);
+  const [existingtTargets, setExistingTargets] = React.useState<Array<any>>([]);
+  const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
+
+  /** Callbacks */
+  const onCheckUncheck = React.useCallback(
+    (i: number, name: string) => {
+      let newChecked = [];
+      newChecked = [...checked]; // Create copy
+      newChecked[i] = !checked[i]; // Flip the value
+      setChecked(newChecked); // Update checked list
+      // Add items to be deleted
+      if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
+      // Remove uncheck items
+      else {
+        setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
+      }
+    },
+    [deleteTarget, checked]
+  );
+  const onItemUncheckIcon = (props: any) => RemoveIcon(props, deleteTarget);
+  const onRemoveNewTarget = (name: string) => {
+    setNewTargetList((arr: Array<string>) => arr.filter((n) => n !== name));
+    setNumTargets((i: number) => i + 1);
+  };
+  const showAddModalVisible = React.useCallback(() => setAddVisible(true), []);
+  const hideModalVisible = React.useCallback(() => setAddVisible(false), []);
 
   /** Populate checked items with default values */
   useEffect(() => {
@@ -240,11 +183,35 @@ export default () => {
       ch.push(false);
     }
     setChecked(ch);
-  }, [numTargets]);
+  }, []);
+
+  /** Create checkboxes of existing targets */
+  React.useEffect(() => {
+    const x = targetCoords.map((l: any, i: number) => {
+      const val: boolean = checked[i];
+      const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
+      return (
+        <View key={i + "v"} style={style.CheckBoxWrapper}>
+          <CheckBox
+            title={l.name}
+            containerStyle={cbTheme}
+            key={i}
+            checkedIcon="dot-circle-o"
+            uncheckedColor="#50515B"
+            checkedColor="#6D363F"
+            checked={val}
+            onPress={() => onCheckUncheck(i, l.name)}
+          />
+          {OnlineIcon(l.lastUpdate)}
+        </View>
+      );
+    });
+    setExistingTargets(x);
+  }, [targetCoords, onCheckUncheck, checked, theme]);
 
   return (
     <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      {/** Upper control remaining and add btn */}
+      {/** Upper control remaining no. and add btn */}
       <View style={style.AddWrapper}>
         <Text appearance="hint" style={style.sub}>
           Remaining: {numTargets}
@@ -257,7 +224,6 @@ export default () => {
           />
         ) : null}
       </View>
-
       {/** Add modal */}
       <AddModal
         visible={addVisible}
@@ -266,44 +232,48 @@ export default () => {
         setNewTarget={setNewTargetList}
         hideModalVisible={hideModalVisible}
       />
-
       <ScrollView style={style.scrollView}>
         {/** New targets */}
-        {newTargets}
+        <NewTargets
+          newTargetList={newTargetList}
+          onRemoveNewTarget={onRemoveNewTarget}
+        />
         {/** Existing targets */}
-        {targetInputs}
+        {existingtTargets}
       </ScrollView>
-
       {/** Track and Untrack */}
+      {/* TODO: Implement add and delete connection to api */}
       <View style={style.controlWrapper}>
-        <Button
-          onPress={() => {
-            // TODO:
-            // dispatch an adding of targets
-            // followed by a refresh
-          }}
-          appearance="ghost"
-          status="basic"
-          accessoryRight={(props: any) =>
-            TrackIcon(props, newTargetList.length)
-          }
+        <TrackUntrackBTN
+          newTargetList={newTargetList}
+          deleteTarget={deleteTarget}
         >
-          Track
-        </Button>
-        <Button
-          onPress={() => {
-            // TODO:
-            // dispatch delete followed by a refresh
+          {({ onTrackPress, onUntrackPress }: any) => {
+            return (
+              <>
+                <Button
+                  onPress={onTrackPress}
+                  appearance="ghost"
+                  status="basic"
+                  accessoryRight={(props: any) =>
+                    TrackIcon(props, newTargetList.length)
+                  }
+                >
+                  Track
+                </Button>
+                <Button
+                  onPress={onUntrackPress}
+                  appearance="ghost"
+                  status="basic"
+                  accessoryRight={onItemUncheckIcon}
+                >
+                  Untrack
+                </Button>
+              </>
+            );
           }}
-          appearance="ghost"
-          status="basic"
-          accessoryRight={onItemUncheckIcon}
-        >
-          Untrack
-        </Button>
+        </TrackUntrackBTN>
       </View>
     </Layout>
   );
 };
-
-// TODO: Implement add and delete connection to api
