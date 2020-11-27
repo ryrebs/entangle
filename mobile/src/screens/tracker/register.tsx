@@ -22,8 +22,8 @@ import { authSelector } from "../../store/auth/auth.reducer";
 import { updateTrackerCoordsAction } from "./store/saga";
 import Constants from "expo-constants";
 
-const TIME_INTERVAL =
-  Constants.manifest.extra.EXPO_ENV === "dev" ? 5000 : 15000; // Receive location updates every 5 seconds
+// const TIME_INTERVAL =
+//   Constants.manifest.extra.EXPO_ENV === "dev" ? 5000 : 15000; // Receive location updates every 5 seconds
 const DISTANCE_INTERVAL = Constants.manifest.extra.EXPO_ENV === "dev" ? 0 : 40; // Receive update with distance 30 meters
 export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
@@ -158,7 +158,7 @@ export const getPermissionForLocationAync = async () => {
 export const initBackgroundLocationTaskAync = async () =>
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: 6,
-    timeInterval: TIME_INTERVAL,
+    // timeInterval: TIME_INTERVAL,
     distanceInterval: DISTANCE_INTERVAL,
     pausesUpdatesAutomatically: true,
     foregroundService: {
@@ -178,22 +178,22 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
     if (locations !== null && locations.length > 0) {
       // TODO: Update logic for updating data on server to save location if there are changes only
       // batch(() => {
-        /** Update data on reducer */
-        // store.dispatch(
-        //   updateCoordsReducerAction({ coords: locations[0].coords })
-        // );
-        /** Update tracker's coord on db */
-        // store.dispatch(
-        //   updateTrackerCoordsAction({ coords: locations[0].coords })
-        // );
-        /** Where location = {
-         *    coords: { ....
-         *             "latitude": 10.2997459
-         *             "longitude": 123.8935165,
-         *             "speed": 0.0223002340644598, },
-         *            timestamp: {...}
-         * }
-         */
+      /** Update data on reducer */
+      // store.dispatch(
+      //   updateCoordsReducerAction({ coords: locations[0].coords })
+      // );
+      /** Update tracker's coord on db */
+      // store.dispatch(
+      //   updateTrackerCoordsAction({ coords: locations[0].coords })
+      // );
+      /** Where location = {
+       *    coords: { ....
+       *             "latitude": 10.2997459
+       *             "longitude": 123.8935165,
+       *             "speed": 0.0223002340644598, },
+       *            timestamp: {...}
+       * }
+       */
       // });
     }
   }

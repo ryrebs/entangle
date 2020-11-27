@@ -126,10 +126,7 @@ export default () => {
 
   /** Start background location task updates */
   React.useEffect(() => {
-    async () => {
-      // TODO: Remove after dev
-      // await initBackgroundLocationTaskAync();
-    };
+    initBackgroundLocationTaskAync();
   }, []);
 
   return (
