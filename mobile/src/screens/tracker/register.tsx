@@ -176,15 +176,16 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (data) {
     const { locations }: any = data;
     if (locations !== null && locations.length > 0) {
-      batch(() => {
+      // TODO: Update logic for updating data on server to save location if there are changes only
+      // batch(() => {
         /** Update data on reducer */
-        store.dispatch(
-          updateCoordsReducerAction({ coords: locations[0].coords })
-        );
+        // store.dispatch(
+        //   updateCoordsReducerAction({ coords: locations[0].coords })
+        // );
         /** Update tracker's coord on db */
-        store.dispatch(
-          updateTrackerCoordsAction({ coords: locations[0].coords })
-        );
+        // store.dispatch(
+        //   updateTrackerCoordsAction({ coords: locations[0].coords })
+        // );
         /** Where location = {
          *    coords: { ....
          *             "latitude": 10.2997459
@@ -193,7 +194,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
          *            timestamp: {...}
          * }
          */
-      });
+      // });
     }
   }
 });
