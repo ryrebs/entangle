@@ -2,6 +2,7 @@ package route
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"tracking/backend/db"
@@ -151,7 +152,7 @@ func UpdateTrackerLocationHandler(c echo.Context) (err error) {
 	})
 }
 
-// TrackerDeleteHandler - deletes the requesting tracker and deletes entry of trackerID on all docs
+// TrackerDeleteHandler - deletes the requesting tracker
 func TrackerDeleteHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	if trackerID != nil {
@@ -187,7 +188,7 @@ func deleteTrackerOnTarget(id string) {
 	util.LogInDev("REQUEST DELETE DONE ON", id)
 }
 
-// TargetDeleteTrackerHandler - remove trackers, this will stop the target from being tracked
+// TargetDeleteTrackerHandler - deletes the requesting tracker on each of those targets.
 func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 	trackerID := c.Get(TrackerID)
 	user := &Targets{}
@@ -206,23 +207,19 @@ func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 	}
 	if trackerID != nil {
 		tID := strings.ReplaceAll(trackerID.(string), "\"", "")
-		filter := db.CreateObjectID(tID)
-		changes := struct {
-			Trackers struct {
-				In []string `bson:"$in"`
-			}
-		}{Trackers: struct {
-			In []string `bson:"$in"`
-		}{In: user.Targets}}
-		update := struct {
-			Set interface{} `bson:"$pull"`
-		}{
-			Set: changes,
-		}
-		_, err := LocationCollection.UpdateMany(context.TODO(), filter, update)
-		if err != nil {
-			util.LogInDev("ERR:TargetDeleteTrackerHandler", err.Error())
-			return c.JSON(http.StatusBadRequest, errorResponse)
+		for _, v := range user.Targets {
+			go func(target string) {
+				oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(target, "\"", ""))
+				filter := bson.D{{"_id", oid}}
+				update := bson.D{{"$pull", bson.D{{"trackers", tID}}}}
+				res := LocationCollection.FindOneAndUpdate(context.TODO(), filter, update)
+				if res.Err() != nil {
+					util.LogInDev("ERR:delete target", res.Err())
+					return
+
+				}
+				util.LogInDev(fmt.Sprintf("REQUEST DELETE TRACKER %s ON TARGET %s DONE!", tID, target), "")
+			}(v)
 		}
 	}
 	return c.JSON(http.StatusOK, Response{
