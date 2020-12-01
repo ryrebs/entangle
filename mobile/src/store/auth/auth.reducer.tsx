@@ -36,9 +36,6 @@ const authSlice = createSlice({
           state["auth/id"] = id;
           state["auth/name"] = name;
           state["auth/authenticated"] = true;
-
-          // Add auth header token
-          setBearerToken(token);
         }
         state["auth/errorMsg"] = message;
       } else state["auth/errorMsg"] = action.payload.errorMsg;
@@ -72,6 +69,5 @@ export {
   reducer,
   authSelector,
 };
-
 
 // TODO: refresh token saga

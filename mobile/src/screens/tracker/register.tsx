@@ -24,7 +24,7 @@ import Constants from "expo-constants";
 
 // const TIME_INTERVAL =
 //   Constants.manifest.extra.EXPO_ENV === "dev" ? 5000 : 15000; // Receive location updates every 5 seconds
-const DISTANCE_INTERVAL = Constants.manifest.extra.EXPO_ENV === "dev" ? 0 : 40; // Receive update with distance 30 meters
+const DISTANCE_INTERVAL = Constants.manifest.extra.EXPO_ENV === "dev" ? 0 : 30; // Receive update with distance 30 meters
 export const LOCATION_TASK_NAME = "ENTANGLED_BACKGROUND_LOCATION_TASK";
 
 const isNameValid = (name: string) => {
@@ -167,6 +167,23 @@ export const initBackgroundLocationTaskAync = async () =>
     },
   });
 
+const updateDBAndReducer = (locations: any) => {
+  batch(() => {
+    /** Update data on reducer */
+    store.dispatch(updateCoordsReducerAction({ coords: locations[0].coords }));
+    /** Update tracker's coord on db */
+    store.dispatch(updateTrackerCoordsAction({ coords: locations[0].coords }));
+    /** Where location = {
+     *    coords: { ....
+     *             "latitude": 10.2997459
+     *             "longitude": 123.8935165,
+     *             "speed": 0.0223002340644598, },
+     *            timestamp: {...}
+     * }
+     */
+  });
+};
+
 /** Task for background location updates */
 TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (error) {
@@ -176,25 +193,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
   if (data) {
     const { locations }: any = data;
     if (locations !== null && locations.length > 0) {
-      // TODO: Update logic for updating data on server to save location if there are changes only
-      // batch(() => {
-      /** Update data on reducer */
-      // store.dispatch(
-      //   updateCoordsReducerAction({ coords: locations[0].coords })
-      // );
-      /** Update tracker's coord on db */
-      // store.dispatch(
-      //   updateTrackerCoordsAction({ coords: locations[0].coords })
-      // );
-      /** Where location = {
-       *    coords: { ....
-       *             "latitude": 10.2997459
-       *             "longitude": 123.8935165,
-       *             "speed": 0.0223002340644598, },
-       *            timestamp: {...}
-       * }
-       */
-      // });
+      updateDBAndReducer(locations);
     }
   }
 });

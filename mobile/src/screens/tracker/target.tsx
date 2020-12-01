@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { ScrollView, Dimensions, View } from "react-native";
 import {
   Layout,
@@ -9,14 +9,24 @@ import {
   Modal,
   Card,
   Input,
+  Spinner,
 } from "@ui-kitten/components";
-import { targetsCoordsSelector } from "./store/reducer";
+import {
+  targetsCoordsSelector,
+  trackUntrackTargetsSelector,
+} from "./store/reducer";
 import { CheckBox } from "react-native-elements";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import * as eva from "@eva-design/eva";
 import { isTimeGreaterThan5min } from "../../utils/date.util";
 import { authSelector } from "../../store/auth/auth.reducer";
 import { targetStyle as style } from "./style";
+import {
+  trackTargetsRequestAction,
+  unTrackTargetsRequestAction,
+} from "./store/requests";
+import { formatDistanceStrict } from "date-fns";
+import { fromUnixTime } from "date-fns/esm";
 
 const MAX_TARGET = 20;
 
@@ -105,19 +115,31 @@ const AddModal: any = React.memo(
 
 /** Track and untrack component  */
 const TrackUntrackBTN = ({ newTargetList, deleteTarget, children }: any) => {
+  const { error, loading } = useSelector(trackUntrackTargetsSelector);
+  const dispatch = useDispatch();
   const onTrackPress = () => {
     if (newTargetList.length > 0) {
-      console.log(newTargetList);
+      dispatch(
+        trackTargetsRequestAction({
+          targets: newTargetList,
+        })
+      );
     }
   };
   const onUntrackPress = () => {
     if (deleteTarget.length > 0) {
-      console.log(deleteTarget);
+      dispatch(
+        unTrackTargetsRequestAction({
+          targets: deleteTarget,
+        })
+      );
     }
   };
   return children({
     onTrackPress,
     onUntrackPress,
+    error,
+    loading,
   });
 };
 
@@ -154,16 +176,16 @@ export default () => {
 
   /** Callbacks */
   const onCheckUncheck = React.useCallback(
-    (i: number, name: string) => {
+    (i: number, id: string) => {
       let newChecked = [];
       newChecked = [...checked]; // Create copy
       newChecked[i] = !checked[i]; // Flip the value
       setChecked(newChecked); // Update checked list
       // Add items to be deleted
-      if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[name]]);
+      if (newChecked[i]) setDeleteTargets([...deleteTarget, ...[id]]);
       // Remove uncheck items
       else {
-        setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== name));
+        setDeleteTargets((arr: Array<string>) => arr.filter((n) => n !== id));
       }
     },
     [deleteTarget, checked]
@@ -183,26 +205,30 @@ export default () => {
       ch.push(false);
     }
     setChecked(ch);
-  }, []);
+  }, [numTargets]);
 
   /** Create checkboxes of existing targets */
   React.useEffect(() => {
     const x = targetCoords.map((l: any, i: number) => {
       const val: boolean = checked[i];
       const cbTheme = theme === eva.dark ? style.cbDark : style.cbWhite;
+      const lUpdate = formatDistanceStrict(
+        fromUnixTime(l.lastUpdate),
+        new Date()
+      );
       return (
         <View key={i + "v"} style={style.CheckBoxWrapper}>
+          {/* {OnlineIcon(l.lastUpdate)} */}
           <CheckBox
-            title={l.name}
+            title={`Name: ${l.name}\nID: ${l._id}\nLast Update: ${lUpdate}`}
             containerStyle={cbTheme}
             key={i}
             checkedIcon="dot-circle-o"
             uncheckedColor="#50515B"
             checkedColor="#6D363F"
             checked={val}
-            onPress={() => onCheckUncheck(i, l.name)}
+            onPress={() => onCheckUncheck(i, l._id)}
           />
-          {OnlineIcon(l.lastUpdate)}
         </View>
       );
     });
@@ -241,17 +267,19 @@ export default () => {
         {/** Existing targets */}
         {existingtTargets}
       </ScrollView>
+
       {/** Track and Untrack */}
-      {/* TODO: Implement add and delete connection to api */}
-      <View style={style.controlWrapper}>
-        <TrackUntrackBTN
-          newTargetList={newTargetList}
-          deleteTarget={deleteTarget}
-        >
-          {({ onTrackPress, onUntrackPress }: any) => {
-            return (
-              <>
+      <TrackUntrackBTN
+        newTargetList={newTargetList}
+        deleteTarget={deleteTarget}
+      >
+        {({ onTrackPress, onUntrackPress, loading }: any) => {
+          return (
+            <>
+              {loading && <Spinner status="info" />}
+              <View style={style.controlWrapper}>
                 <Button
+                  disabled={loading}
                   onPress={onTrackPress}
                   appearance="ghost"
                   status="basic"
@@ -262,6 +290,7 @@ export default () => {
                   Track
                 </Button>
                 <Button
+                  disabled={loading}
                   onPress={onUntrackPress}
                   appearance="ghost"
                   status="basic"
@@ -269,11 +298,11 @@ export default () => {
                 >
                   Untrack
                 </Button>
-              </>
-            );
-          }}
-        </TrackUntrackBTN>
-      </View>
+              </View>
+            </>
+          );
+        }}
+      </TrackUntrackBTN>
     </Layout>
   );
 };

@@ -19,10 +19,22 @@ const styles = StyleSheet.create({
     height: 32,
     margin: 2,
   },
+  iconRefresh: {
+    width: 25,
+    height: 25,
+    margin: 2,
+  },
   locationBtnWrapper: {
     position: "absolute",
     bottom: 0,
     left: 0,
+    zIndex: 99999,
+    marginLeft: 10,
+  },
+  refreshBtnWrapper: {
+    position: "absolute",
+    top: 0,
+    right: 0,
     zIndex: 99999,
     marginLeft: 10,
   },
@@ -211,6 +223,7 @@ const targetStyle = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     height: 50,
+    marginTop: 20,
     marginBottom: 15,
   },
   newTargetWrapper: {
@@ -241,8 +254,8 @@ const targetStyle = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   activeIcon: {
-    height: 20,
-    width: 20,
+    height: 10,
+    width: 10,
   },
   addInput: {
     width: 200,

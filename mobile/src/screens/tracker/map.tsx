@@ -32,6 +32,10 @@ const locationIcon = (selfLocationOn: Boolean) => {
   );
 };
 
+const refreshIcon = () => {
+  return <Icon fill="green" style={styles.iconRefresh} name="repeat-outline" />;
+};
+
 const targetIcon = (targetsDetected: Boolean) => {
   const targetsActiveColor = targetsDetected ? "#07EE15" : "#F5F5F5";
   const locationOffStroke = targetsDetected ? "#9F5B4C" : "#A3B1BB";
@@ -105,6 +109,10 @@ export default () => {
     } else setSelfLocation(!selfLocationOn);
   }, [setSelfLocation, selfLocationOn, setPermissionModal]);
 
+  const onRefreshIconPress = () => {
+    dispatch(startFetchTargetUpdates());
+  };
+
   const locationIconComp = React.useCallback(() => {
     return locationIcon(selfLocationOn);
   }, [selfLocationOn]);
@@ -135,6 +143,13 @@ export default () => {
         alignItems: "center",
       }}
     >
+      <View style={styles.refreshBtnWrapper}>
+        <Button
+          appearance="ghost"
+          onPress={onRefreshIconPress}
+          accessoryLeft={refreshIcon}
+        />
+      </View>
       <View style={styles.locationBtnWrapper}>
         <Button
           appearance="ghost"

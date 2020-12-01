@@ -1,8 +1,10 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
+import { State } from "react-native-gesture-handler";
 
 interface targetState {
   tracker: any;
+  auth?: any;
 }
 
 /** Creating selectors */
@@ -26,6 +28,16 @@ const targetsCoordsSelector = createSelector(
   (tracker) => tracker["tracker/getTargets"].response
 );
 
+const trackUntrackTargetsSelector = createSelector(
+  (state: targetState) => state.tracker,
+  (tracker) => {
+    return {
+      error: tracker["tracker/addDeleteTargets"].error,
+      loading: tracker["tracker/addDeleteTargets"].loading,
+    };
+  }
+);
+
 const initialState = {
   "tracker/getTargets": {
     loading: false,
@@ -34,12 +46,21 @@ const initialState = {
     errorMsg: "",
   },
   "tracker/coords": null,
+  "tracker/addDeleteTargets": {
+    loading: false,
+    error: false,
+  },
 };
 
 const trackerSlice = createSlice({
   name: "trackerSlice",
   initialState,
   reducers: {
+    trackUntrackTargetsReducerAction: (state, action) => {
+      const stateKey = "tracker/addDeleteTargets";
+      state[stateKey].loading = action.payload.loading;
+      state[stateKey].error = action.payload.error;
+    },
     getTargetsStartedReducerAction: (state) => {
       state["tracker/getTargets"].loading = true;
     },
@@ -64,6 +85,7 @@ const trackerSlice = createSlice({
 const { actions, reducer } = trackerSlice;
 
 const {
+  trackUntrackTargetsReducerAction,
   getTargetsStartedReducerAction,
   getTargetsReducerAction,
   updateCoordsReducerAction,
@@ -74,8 +96,10 @@ export {
   targetsCoordsSelector,
   trackerCoordsSelector,
   targetResponseSelector,
+  trackUntrackTargetsSelector,
   getTargetsReducerAction,
   updateCoordsReducerAction,
+  trackUntrackTargetsReducerAction,
 };
 
 export default reducer;
