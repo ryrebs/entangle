@@ -1,35 +1,21 @@
 import { createAction } from "@reduxjs/toolkit";
-import {
-  take,
-  delay,
-  call,
-  put,
-  all,
-  fork,
-  cancel,
-  retry,
-} from "redux-saga/effects";
+import { call, put, all, retry, takeLatest } from "redux-saga/effects";
 import { ApiService } from "../../../service/api";
 import {
   getTargetsReducerAction,
   getTargetsStartedReducerAction,
 } from "./reducer";
 
-const DELAY_BEFORE_NEXT_API_REQUEST = 20000;
 const DELAY_BEFORE_RETRY = 5000;
 const TARGET_ROUTE = "/location/fetch";
 const TRACKER_ROUTE = "/location/update";
 const START_FETCH_TARGETS = "START_FETCH_TARGETS";
-const STOP_FETCH_TARGETS = "CANCEL_FETCH_TARGETS";
 const UPDATE_TRACKER_COORDS = "UPDATE_TRACKER_COORDS";
-const STOP_UPDATE_TRACKER_COORDS = "STOP_UPDATE_TRACKER_COORDS";
 
 export const startFetchTargetUpdates = createAction(START_FETCH_TARGETS);
-export const stopFetchTargetUpdates = createAction(STOP_FETCH_TARGETS);
 export const updateTrackerCoordsAction: (action: any) => any = createAction(
   UPDATE_TRACKER_COORDS
 );
-export const stopUpdateTrackerCoords = createAction(STOP_UPDATE_TRACKER_COORDS);
 
 function* getTargetsHandler() {
   try {
@@ -46,9 +32,8 @@ function* getTargetsHandler() {
     );
   } catch (error) {
     const { response } = error;
-    let res;
+    let res = null;
     if (response) res = response;
-    else res = null;
     yield put(
       getTargetsReducerAction({
         loading: false,
@@ -62,61 +47,27 @@ function* getTargetsHandler() {
 
 /** Get targets once */
 function* getTargets() {
-  while (true) {
-    yield take(START_FETCH_TARGETS);
-    const task = yield fork(getTargetsHandler);
-    yield take(STOP_FETCH_TARGETS);
-    yield cancel(task);
-  }
+  yield takeLatest(START_FETCH_TARGETS, getTargetsHandler);
 }
 
-function* getTargetsHandlerLoop() {
-  while (true) {
-    yield call(getTargetsHandler);
-    yield delay(DELAY_BEFORE_NEXT_API_REQUEST);
-  }
-}
-
-/** Start fetching targets every N seconds */
-function* getTargetsLoop() {
-  while (true) {
-    yield take(START_FETCH_TARGETS);
-    const task = yield fork(getTargetsHandlerLoop);
-    yield take(STOP_FETCH_TARGETS);
-    yield cancel(task);
-  }
-}
-
-function* updateTrackerCoordsHandler() {
-  while (true) {
-    const action = yield take(UPDATE_TRACKER_COORDS);
-    const { coords } = action.payload;
-    const method = ApiService.getApi().post;
-    const count = 2;
-    if (coords !== null) {
-      const { latitude, longitude } = coords;
-      const pyl = {
-        lat: latitude,
-        lng: longitude,
-      };
-      yield retry(count, DELAY_BEFORE_RETRY, method, TRACKER_ROUTE, pyl);
-      yield delay(DELAY_BEFORE_NEXT_API_REQUEST);
-    }
+function* updateTrackerCoordsHandler(action: any) {
+  const { coords } = action.payload;
+  const method = ApiService.getApi().post;
+  const count = 2;
+  if (coords !== null) {
+    const { latitude, longitude } = coords;
+    const pyl = {
+      lat: latitude,
+      lng: longitude,
+    };
+    yield retry(count, DELAY_BEFORE_RETRY, method, TRACKER_ROUTE, pyl);
   }
 }
 
 /** Updates the location of the user/tracker on database */
 function* updateTrackerCoords() {
-  while (true) {
-    const task = yield fork(updateTrackerCoordsHandler);
-    yield take(STOP_UPDATE_TRACKER_COORDS);
-    yield cancel(task);
-  }
+  yield takeLatest(UPDATE_TRACKER_COORDS, updateTrackerCoordsHandler);
 }
 export default function* () {
-  yield all([
-    call(getTargetsLoop),
-    call(updateTrackerCoords),
-    call(getTargets),
-  ]);
+  yield all([call(getTargets), call(updateTrackerCoords)]);
 }
