@@ -210,11 +210,23 @@ func TargetDeleteTrackerHandler(c echo.Context) (err error) {
 		for _, v := range user.Targets {
 			go func(target string) {
 				oid, _ := primitive.ObjectIDFromHex(strings.ReplaceAll(target, "\"", ""))
-				filter := bson.D{{"_id", oid}}
-				update := bson.D{{"$pull", bson.D{{"trackers", tID}}}}
-				res := LocationCollection.FindOneAndUpdate(context.TODO(), filter, update)
-				if res.Err() != nil {
-					util.LogInDev("ERR:delete target", res.Err())
+				filter := struct {
+					ID       primitive.ObjectID `bson:"_id"`
+					trackers string
+				}{
+					ID:       oid,
+					trackers: tID,
+				}
+				update := struct {
+					Set interface{} `bson:"$pull"`
+				}{
+					Set: struct {
+						Trackers string
+					}{Trackers: tID},
+				}
+				_, err := db.FindOneAndUpdate(update, filter, LocationCollection)
+				if err != nil {
+					util.LogInDev("ERR:delete target", err.Error)
 					return
 
 				}

@@ -97,7 +97,7 @@ func FindOneAndUpdate(setChanges interface{}, filter interface{}, cl *mongo.Coll
 			util.LogInDev("ERR:ErrNoDocuments", err.Error())
 			return nil, err
 		}
-		util.LogInDev("ERR:setTrackerExpiredStatus", err.Error())
+		util.LogInDev("ERR:FindOneAndUpdate", err.Error())
 		return nil, err
 	}
 	util.LogInDev("UPDATED", updatedDocument)
