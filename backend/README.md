@@ -75,5 +75,5 @@ Refresh token
 
     curl --header "Content-Type: application/json" \
     --request POST \
-    --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDY2NTgyODEsInN1YiI6IlwiNWZjMjU3NjkxMWRjNzdmMWQzYTNmYjc5XCIifQ.zSeoRtwIfmsTNadnauy8msPV6FSZiEE-7tbHgdWDQO0", "name": "rodel"}' \
+    --data '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDY2NTgyODEsInN1YiI6IlwiNWZjMjU3NjkxMWRjNzdmMWQzYTNmYjc5XCIifQ.zSeoRtwIfmsTNadnauy8msPV6FSZiEE-7tbHgdWDQO0"}' \
     http://localhost:5000/auth/refresh

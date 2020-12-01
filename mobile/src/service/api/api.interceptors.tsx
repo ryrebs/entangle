@@ -1,5 +1,4 @@
 /* eslint-disable max-classes-per-file */
-// TODO: remove console.log(error, response)
 import {
   NETWORK_ERROR_MSG,
   REQUEST_TIMEOUT_MSG,

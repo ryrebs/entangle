@@ -17,7 +17,7 @@ import UtilModal from "../../utils/modal.util";
 import { styles, mapStyle } from "./style";
 import { ThemeContext } from "../../context/ThemeContextProvider";
 import { authSelector } from "../../store/auth/auth.reducer";
-import { startFetchTargetUpdates } from "./store/saga";
+import { startFetchTargetUpdates, refreshTokenAction } from "./store/saga";
 
 const locationIcon = (selfLocationOn: Boolean) => {
   const isLocationIconACtiveColor = selfLocationOn ? "#22C10F" : "#F5F5F5";
@@ -92,7 +92,7 @@ export default () => {
   const [isTargetModalVisible, setIsTargetModalVisible] = React.useState(false);
   const [permissionModal, setPermissionModal] = React.useState(false);
   const [mapReady, setMapReady] = React.useState(false);
-  const { name } = useSelector(authSelector);
+  const { name, error, token, errorMsg } = useSelector(authSelector);
   const dispatch = useDispatch();
 
   // Effects
@@ -110,7 +110,14 @@ export default () => {
   }, [setSelfLocation, selfLocationOn, setPermissionModal]);
 
   const onRefreshIconPress = () => {
-    dispatch(startFetchTargetUpdates());
+    if (
+      error &&
+      (errorMsg.includes("Invalid") || errorMsg.includes("Expired"))
+    ) {
+      dispatch(refreshTokenAction(token));
+    } else {
+      dispatch(startFetchTargetUpdates());
+    }
   };
 
   const locationIconComp = React.useCallback(() => {

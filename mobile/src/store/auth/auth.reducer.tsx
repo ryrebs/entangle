@@ -27,6 +27,23 @@ const authSlice = createSlice({
     "auth/errorMsg": null,
   },
   reducers: {
+    tokenExpiredReducerAction: (state, action) => {
+      state["auth/error"] = action.payload.error;
+      state["auth/errorMsg"] = action.payload.errorMsg;
+    },
+    refreshTokenAuthReducerAction: (state, action) => {
+      if (action.payload.response !== null) {
+        const { data } = action.payload.response;
+        if (data !== null) {
+          state["auth/token"] = data;
+          if (!action.payload.error && action.payload.httpStatusCode === 201)
+            state["auth/authenticated"] = true;
+        }
+      } else state["auth/errorMsg"] = action.payload.errorMsg;
+
+      state["auth/error"] = action.payload.error;
+      state["auth/loading"] = action.payload.loading;
+    },
     updateAuthReducerAction: (state, action) => {
       if (action.payload.response !== null) {
         const { data, message } = action.payload.response;
@@ -37,7 +54,6 @@ const authSlice = createSlice({
           state["auth/name"] = name;
           state["auth/authenticated"] = true;
         }
-        state["auth/errorMsg"] = message;
       } else state["auth/errorMsg"] = action.payload.errorMsg;
 
       state["auth/error"] = action.payload.error;
@@ -52,22 +68,24 @@ const authSlice = createSlice({
         state["auth/errorMsg"] = null;
         state["auth/loading"] = false;
         state["auth/authenticated"] = false;
-
-        // Remove auth header token
-        setBearerToken("");
       }
     },
   },
 });
 
 const { actions, reducer } = authSlice;
-const { updateAuthReducerAction, logoutAuthReducerAction } = actions;
+const {
+  updateAuthReducerAction,
+  logoutAuthReducerAction,
+  refreshTokenAuthReducerAction,
+  tokenExpiredReducerAction,
+} = actions;
 
 export {
+  reducer,
+  tokenExpiredReducerAction,
   logoutAuthReducerAction,
   updateAuthReducerAction,
-  reducer,
+  refreshTokenAuthReducerAction,
   authSelector,
 };
-
-// TODO: refresh token saga

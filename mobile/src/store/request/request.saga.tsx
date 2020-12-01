@@ -9,6 +9,7 @@ import {
   actionChannel,
 } from "redux-saga/effects";
 import { channel, buffers, Channel } from "redux-saga";
+import { tokenExpiredReducerAction } from "../auth/auth.reducer";
 
 interface APIMethod {
   (...args: any[]): any;
@@ -39,27 +40,27 @@ export function* retry(
   throw error;
 }
 
+export function* checkTokenExpiration(response: any) {
+  if (
+    response.message.includes("Expired") ||
+    response.message.includes("Invalid")
+  )
+    yield put(
+      tokenExpiredReducerAction({ error: true, errorMsg: response.message })
+    );
+}
+
 export function* returnErrorResponseAction(err: any, action: any) {
   const { response } = err;
-  if (response) {
-    yield put(
-      action({
-        loading: false,
-        error: true,
-        errorMsg: "",
-        response,
-      })
-    );
-  } else {
-    yield put(
-      action({
-        loading: false,
-        response: null,
-        error: true,
-        errorMsg: err.message || "",
-      })
-    );
-  }
+  yield call(checkTokenExpiration, response);
+  yield put(
+    action({
+      loading: false,
+      response,
+      error: true,
+      errorMsg: err.message || "",
+    })
+  );
 }
 
 function* handler(action: any) {

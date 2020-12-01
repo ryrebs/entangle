@@ -29,7 +29,7 @@ type User interface {
 // GenericUser for registration
 type GenericUser struct {
 	Token string `json:"token" validate:"required"`
-	Name string `json:"name" validate:"required"`
+	Name  string `json:"name" validate:"omitempty,required"`
 	err   map[string]string
 }
 
