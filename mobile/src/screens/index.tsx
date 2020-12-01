@@ -9,12 +9,18 @@ import RegisterScreen from "./tracker/register";
 import { ThemeContext } from "../context/ThemeContextProvider";
 import { useSelector } from "react-redux";
 import { authSelector } from "../store/auth/auth.reducer";
+import { setBearerToken } from "../service/api";
 
 const Stack = createStackNavigator();
 
 function App() {
-  const { authenticated } = useSelector(authSelector);
+  const { authenticated, token } = useSelector(authSelector);
   const { theme } = React.useContext(ThemeContext);
+
+  React.useEffect(() => {
+    setBearerToken(token);
+  }, [token]);
+
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
