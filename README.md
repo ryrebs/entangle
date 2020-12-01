@@ -1,7 +1,5 @@
 ## Entangle
 
-TODO: Use Centrifugo for realtime connections.
-
 Track anyone, anywhere!
 
 - Backend server using [Go](https://golang.org/) and [Echo](https://echo.labstack.com/)
@@ -18,7 +16,7 @@ Track anyone, anywhere!
 
 ---
 
-### Setup [WIP]
+### Setup
 
 A. Replace all dev keys and certs.
 
