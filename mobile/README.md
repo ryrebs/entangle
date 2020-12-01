@@ -63,7 +63,7 @@ EXPO_KEYSTORE_ALIAS=
 
 2. Create the js bundles on `dist` folder:
 
-`expo export --dev --public-url http://127.0.0.1:8000`
+`expo export --dev --force --public-url http://127.0.0.1:8000`
 
 3. Serve the `dist` folder.
 
