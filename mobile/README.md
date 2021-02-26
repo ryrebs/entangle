@@ -26,19 +26,20 @@ _Clearing expo keystore: `expo build:android --clear-credentials`_
 
 Create your own keystore.
 
-```keytool -genkey -v -keystore \
-   <keystore-name>.keystore \
-   -alias <keystore-alias> \
-   -keyalg RSA -keysize 2048 -validity 10000
+```
+keytool -genkey -v -keystore \
+        <keystore-name>.keystore \
+        -alias <keystore-alias> \
+        -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 Create upload key:
 
 ```
 keytool -export -rfc \
-  -keystore <keystore-name>keystore \
-  -alias <keystore-alias> \
-  -file entangle_upload_cert.pem \
+        -keystore <keystore-name>.keystore \
+        -alias <keystore-alias> \
+        -file entangle_upload_cert.pem \
 ```
 
 #### Option 3:
