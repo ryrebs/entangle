@@ -17,10 +17,9 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/validator/v10 v10.2.0
 	github.com/google/go-cmp v0.4.0 // indirect
-	github.com/labstack/echo/v4 v4.1.16
-	github.com/stretchr/testify v1.4.0
+	github.com/labstack/echo/v4 v4.9.0
+	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/echo-swagger v1.0.0
 	github.com/swaggo/swag v1.6.3
 	go.mongodb.org/mongo-driver v1.3.3
-	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 )
